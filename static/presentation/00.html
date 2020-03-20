@@ -1,0 +1,502 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>JSDS: Servers</title>
+
+		<link rel="stylesheet" href="../libs/reveal/css/reset.css">
+		<link rel="stylesheet" href="../libs/reveal/css/reveal.css">
+		<link rel="stylesheet" href="../libs/reveal/css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+<!-- 		<link rel="stylesheet" href="../libs/reveal/lib/css/monokai.css"> -->
+<!-- 		<link rel="stylesheet" href="../libs/reveal/lib/css/tomorrow-night.css"> -->
+		<link rel="stylesheet" href="../libs/reveal/lib/css/vs.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../libs/reveal/css/print/pdf.css' : '../libs/reveal/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+		<style>
+			.clean_img {
+				margin: 0px !important;
+				border: none !important;
+				box-shadow: none !important;
+			}
+			h3 {
+				color: #f00 !important;
+			}
+			.highlighted {
+				color: #ff7f00 !important;
+				font-style: italic;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section><br />
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h2 class="highlighted">Part 0: Webservers</h2>
+				</section>
+				
+				<section>
+					<h2>What you will learn about webservers, and why:</h2>
+					<h3 class="highlighted">What</h3>
+					<ul>
+						<li>Types of webserver - traditional; code-driven</li>
+						<li>How messages are passed to and from the server</li>
+						<li>What a server can do, and what it cannot</li>
+						<li>What a server knows about clients and vice versa</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>What you will learn about webservers, and why:</h2>
+					<h3 class="highlighted">Why?</h3>
+					<ul>
+						<li>Although it is possible to create interactive apps that <br />
+							run in the browser without using a server, <br />
+							there can be difficulties in getting data.</li>
+						<li>If all that corporate IT offers is a browser (or PowerPoint) 
+							you should be aware of the limitations this presents (but also the opportunities).</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Webservers</h2>
+					<p>
+						<img class= "clean_img" src="./images/client-server.png">
+						<small>The relationship between client, server and other services</small>
+					</p>
+				</section>
+				
+				<section>
+					<h2>Different types of server</h2>
+					<h3>Traditional</h3>
+						<ul>
+							<li>Apache <img class= "clean_img" src="./images/apache_feather.png"  width="77px" height="20px" alt="Apache"></li>
+							<li><img class= "clean_img" src="./images/nginx.png"  width="113" height="29px" alt="nginx"></li>
+							<li><img class= "clean_img" src="./images/litespeed.png"  width="135" height="33px" alt="litespeed"></li>
+							<li><img class= "clean_img" src="./images/iis.png"  width="120" height="36px" alt="litespeed"></li>
+						</ul>
+					<br/>
+					<p>Built for performance and reliability</p>
+					<small><a href="https://serverguy.com/comparison/apache-vs-nginx/">Comparison of Apache vs nginx</a></small>
+				</section>
+				
+				<section>
+					<section>
+						<h2>Different types of server</h2>
+						<h3>Code-driven</h3>
+						<h3 class="highlighted">Sinatra-style</h3>
+							<ul>
+								<li>Ruby Sinatra</li>
+								<li>node.js - Express</li>
+								<li>Python - Flask</li>
+								<li>Rust - Rocket</li>
+							</ul>
+						<br/>
+						<p>Maximum flexibility as integrated into program code</p>
+
+					</section>
+				
+					<section>
+						<h4>Sinatra code example</h4>
+						<pre><code class="ruby hljs"># myapp.rb
+require 'sinatra'
+
+get '/' do
+  'Hello world!'
+end
+
+post '/' do
+  #.. create something ..
+end
+
+get '/hello/:name' do
+  # matches "GET /hello/foo" and "GET /hello/bar"
+  # params['name'] is 'foo' or 'bar'
+  "Hello #{params['name']}!"
+end
+						</code></pre>
+						<small>Ruby</small>
+					</section>
+				
+				
+					<section>
+						<h4>Express code example</h4>
+						<pre><code class="js hljs">const express = require('express')
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => res.send('Hello World!'));
+
+app.listen(port, () => {
+	console.log(`Example app listening on port ${port}!`));
+}
+						</code></pre>
+						<small>JavaScript</small>
+					</section>
+				
+				
+					<section>
+						<h4>Flask code example</h4>
+						<pre><code class="python hljs">from flask import Flask, escape, request
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    name = request.args.get("name", "World")
+    return f'Hello, {escape(name)}!'
+						</code></pre>
+						<small>Python</small>
+					</section>
+				
+				
+					<section>
+						<h4>Rocket code example</h4>
+						<pre><code class="rust hljs">#[get("/")]#![feature(proc_macro_hygiene, decl_macro)]
+#[macro_use] extern crate rocket;
+
+#[get("/")]
+fn index() -> &'static str {
+    "Hello, world!"
+}
+
+#[get("/hello/&lt;name>/&lt;age>")]
+fn hello(name: String, age: u8) -> String {
+    format!("Hello, {} year old named {}!", age, name)
+}
+
+fn main() {
+    rocket::ignite().mount("/", routes![index]).launch();
+}
+						</code></pre>
+						<small>Rust</small>
+					</section>
+				
+				
+				
+				</section>
+				
+				<section>
+				
+					<section>
+						<h2>Different types of server</h2>
+						<h3>Code-driven</h3>
+						<h3 class="highlighted">Convention over configuration</h3>
+							<ul>
+								<li>Python - Django</li>
+								<li>Ruby on Rails... etc</li>
+							</ul>
+						<br/>
+						<p>Less about flexibility and more about mass production, these frameworks are used in publishing environments</p>
+						<p>e.g. GOV.UK uses Ruby on Rails</p>
+					</section>
+				
+					<section>
+						<h4>Django code example</h4>
+						<pre><code class="python hljs">################################### in views.py
+from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse("Hello, world.")
+
+################################### in urls.py
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.index, name='index'),
+]
+						</code></pre>
+						<small>Python</small>
+					</section>
+				
+					<section>
+						<h4>Ruby on Rails code example</h4>
+						<pre><code class="ruby hljs" data-trim>################################### in config/routes.rb
+Rails.application.routes.draw do
+  get 'welcome/index'
+ 
+  root 'welcome#index'
+end
+</code></pre>
+
+						<pre><code class="html hljs" data-trim>####################### in app/views/welcome/index.html.erb
+<h1>Hello, Rails!</h1>
+						</code></pre>
+						<small>Ruby</small>
+					</section>
+				
+				
+				</section>
+				
+				<section>
+				
+					<section>
+						<h2>Different types of server</h2>
+						<h3>Code-driven</h3>
+						<h3 class="highlighted">Single Page Application</h3>
+						<ul>
+							<li>R Shiny</li>
+						</ul>
+					</section>
+				
+					<section>
+						<h4>R Shiny code example</h4>
+						<pre><code class="r hljs">library(shiny)
+
+# Define server logic required to generate and 
+# plot a random distribution
+
+shinyServer(function(input, output) {
+  output$distPlot <- renderPlot({
+    # generate an rnorm distribution and plot it
+    dist <- rnorm(input$obs)
+    hist(dist)
+  })
+})
+						</code></pre>
+						<small>R</small>
+					</section>
+				
+					<section>
+						<h3 class="highlighted">How Shiny works...</h3>
+						<p>Shiny can only run on the server<br />(R doesn't run in the browser)</p>
+						<p>The R code running on the server 'remote-controls' <br />the browser to get input and display results</p>
+						<p><b>How?</b></p>
+					</section>
+				
+					<section>
+						<h3 class="highlighted">Security workaround...</h3>
+						<p>The browser is sandboxed and won't let outside influences take control</p>
+						<p>(This also prevents browsers from accessing your hard disk, databases, etc.)</p>
+						<p>R Shiny gets around this by serving up a page <br />pre-programmed to contact the server on launch</p>
+						<p>The communications mechanism will be shown later...</p>
+					</section>
+				
+
+				
+				</section>
+				
+				
+				<section>
+					<h2>Recap</h2>
+					<h3>What servers do...</h3>
+					<ul>
+						<li>Deliver static files</li>
+						<li>Pass other requests to code</li>
+					</ul>
+				</section>
+				
+				<section>
+					<h2>Background activities</h2>
+					<h3>By servers...</h3>
+					<ul>
+						<li>Set cookies</li>
+						<li>Log every interaction</li>
+						<li>Run code on the server</li>
+					</ul>
+					<p>... not much else - and even <br />these are ‘by invite only’</p>
+				</section>
+				
+				<section>
+					<h2>Background activities</h2>
+					<h3>By clients...</h3>
+					<ul>
+						<li>Can also set cookies</li>
+						<li>If not secure, can leak personally <br />identifing data e.g. hardware IDs</li>
+					</ul>
+					<p>By design, the client is in charge and <br />is the one to initiate all interactions</p>
+				</section>
+			
+				<section>
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>Messaging methods</h3>
+						<ul>
+							<li>HTTP GET</li>
+							<li>HTTP POST</li>
+							<li>AJAX</li>
+							<li>Websockets</li>
+						</ul>
+						<br />
+					</section>
+					
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>HTTP GET</h3>
+						<p>This is the most basic request method</p>
+						<p>It uses the browser’s address bar to specify everything</p>
+						<pre><code class="http hljs">
+http://www.example.com/route/file.html
+http://www.example.com/route/script.php
+http://www.example.com/?amount=42
+http://www.example.com/?country=cn&measure=gdp
+						</code></pre>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>HTTP POST</h3>
+						<p>This uses a mechanism built into browsers</p>
+						<p>Used when you have a form with data to submit</p>
+						<p>Requires a bit of HTML work, but otherwise simple</p>
+						<p><a href="https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript">Example code for sending POST request by code</a></p>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>HTTP GET/POST</h3>
+						<p>Server code (for GET)</p>
+						<pre><code class="php hljs">
+if (isset($_GET['country'])) {
+	$land = $_GET['country'];
+} else {
+	$land = 'world';
+}
+
+$sql = "SELECT * FROM tbl WHERE country = '" . $land . "';";
+
+$stmt = $conn->prepare($sql);
+$stmt->execute();        
+$result = $stmt->setFetchMode(PDO::FETCH_OBJ);
+echo json_encode($stmt->fetchAll()) . "\n";
+						</code></pre>
+						<small>php</small>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>AJAX</h3>
+						<p>Code-driven implementation of GET or POST</p>
+						<ul>
+							<li>AJAX request almost identical to <br />regular HTTP request (as seen by server)</li>
+							<li>Communications channel closes after <br />response sent</li>
+						</ul>
+						<p>Various ways of coding: many libraries offer AJAX</p>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>AJAX</h3>
+						<h3 class="highlighted">Client code</h3>
+						<pre><code class="js hljs">
+fetch('http://www.example.com/?country=cn&measure=gdp')
+	.then(some_data => some_data.json())
+	.then(function(parsed_data) {
+		let clean_data = do_data_wrangling(parsed_data);
+		do_something_else(clean_data);
+	});    
+						</code></pre>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>AJAX</h3>
+						<h3 class="highlighted">Server code</h3>
+						<pre><code class="js hljs">
+// read in parameters from query
+let land = (typeof(req.query['country']) != 'undefined') ? 
+		[req.query['country']] : "world";
+
+let sql = "SELECT * FROM tbl WHERE country = '" + land + "';";
+
+get_data(sql).then(data => {main_output = JSON.stringify(data);})
+	.catch(error => {main_output = "Something went wrong.";})
+	.finally(() => {
+		res.set('Content-Type', 'application/json');
+		res.send(main_output);
+	});
+						</code></pre>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>Websockets</h3>
+						<h3 class="highlighted">Client code</h3>
+						<p></p>
+						<p></p>
+						<pre><code class="js hljs">
+let ws = new WebSocket('ws://localhost:40510');
+
+ws.onopen = function () {
+	console.log('websocket is connected ...');
+	ws.send('connected');
+}
+
+ws.onmessage = function (ev) {
+	console.log(ev);
+	if (ev.data == 'get_secret_info') {
+		ws.send(JSON.stringify({'secrets': secret_info}));
+	}
+}						</code></pre>
+					</section>
+				
+					<section>
+						<h2>Client-server communication</h2>
+						<h3>Websockets</h3>
+						<h3 class="highlighted">Server code</h3>
+						<p></p>
+						<p></p>
+						<pre><code class="js hljs">
+let WebSocketServer = require('ws').Server;
+let wss = new WebSocketServer({port: 40510});
+
+wss.on('connection', function (ws, req) {
+
+	ws.on('message', function (message) {
+		console.log('received: %s from %s \n\n', message, '\n\n', ip);
+	});
+	
+	ws.send('something');
+	
+	setInterval(() => ws.send(`${new Date()}`), 1000);
+})
+						</code></pre>
+					</section>
+				</section>
+				
+		
+		
+		
+		
+		
+				
+				
+				
+			
+			</div>
+		</div>
+
+		<script src="../libs/reveal/js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				hash: true,
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+				center: false,				
+				dependencies: [
+					{ src: '../libs/reveal/plugin/markdown/marked.js' },
+					{ src: '../libs/reveal/plugin/markdown/markdown.js' },
+					{ src: '../libs/reveal/plugin/highlight/highlight.js', async: true },
+					{ src: '../libs/reveal/plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>

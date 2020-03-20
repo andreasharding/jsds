@@ -1,0 +1,162 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <title>query API endpoints</title>
+    <script src="../libs/jspdf.min.js"></script>
+</head>
+
+<body>
+
+<input type="text" id="search_query" value="coronavirus fake news" placeholder="Enter query here: e.g. cats OR dogs" width="90">
+<button id="go">Query endpoints now</button>
+<button id="mkpdf">Save as pdf</button>
+
+</body>
+
+<script>
+
+const go_btn = document.querySelector('#go');
+const mkpdf_btn = document.querySelector('#mkpdf');
+
+let data_urls = [];
+let gathered_data;
+
+let qry = { "search_terms": '("wildlife crime" OR poaching OR "illegal fishing" OR "wildlife trade")',
+            "maxrecords": 10,
+            "timespan": "1week",
+            "format": "json"
+            }
+
+go_btn.addEventListener( 'click', function() {
+	let new_query = document.querySelector('#search_query').value;
+	console.log('new_query', new_query);
+	if (new_query != "") {
+        qry["search_terms"] = document.querySelector('#search_query').value; // "coronavirus AND UK";
+        data_urls.push(make_gdelt_query(qry));
+        // data_urls.push(make_buzzsumo_query(bs_query));
+        console.log('start querying', qry, data_urls);
+    
+        collect_data();
+    }
+});
+
+mkpdf.addEventListener( 'click', function() {
+    console.log('export_pdf');
+    // let data = [1, 2, 3];
+    export_pdf(gathered_data);
+});
+
+
+function export_pdf(src) {
+    var doc = new jsPDF();
+    let x = 10, y = 20, dy = 7, cy;
+    doc.setFontSize(10);
+    doc.text('Query results for: ' + qry["search_terms"], x, y);
+    y += (2 * dy);
+    
+    doc.setFontSize(8);
+    for (let i = 0; i < src[0].articles.length; i++) {
+        console.log(src[0].articles[i]);
+        cy = (y + i * dy);
+        doc.text(src[0].articles[i].title, x, cy);
+        cy += 2;
+        doc.line(x, cy, (210 - x), cy, 'S');
+    }
+    doc.save('a4.pdf');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// This is one way of doing multiple AJAX calls in parallel
+// modified from https://www.shawntabrizi.com/code/programmatically-fetch-multiple-apis-parallel-using-async-await-javascript/
+    
+
+function make_gdelt_query(query) {
+	let q = encodeURIComponent(query.search_terms);
+	let m = '&mode=artlist';// artlist ToneChart ImageCollageShare TimelineVolRaw TimelineVolInfo  TimelineSourceCountry
+	let x = '&maxrecords=' + query.maxrecords;
+	let t = '&timespan=' + query.timespan;
+	let f = '&format=' + query.format;
+	
+	let url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}${x}${m}${t}${f}`;
+	
+	console.log('GDELT', url);
+	return url;
+}
+
+
+
+// insert your own API key here
+let api_key = '';
+
+
+let bs_query = {	"result_type":"published_date",
+                    "linked":"false",
+                    "num_days": 14,
+                    "page": 1,
+                    "api_key":api_key};
+
+
+function make_buzzsumo_query(query) {
+	let alert_id = 871861;//941691
+	let rt = 'result_type=' + query.result_type;
+	let l = '&linked=' + query.linked;
+	let n = '&num_days=' + query.num_days;
+	let p = '&page=' + query.page;
+	let ak = '&api_key=' + api_key;
+	
+    let url = `https://account-api.buzzsumo.com/alerts/mentions/${alert_id}?${rt}${l}${n}${p}${ak}`
+	
+	console.log('Buzzsumo', url);
+	return url;
+}
+
+
+        
+
+
+async function getAllUrls(urls) {
+    try {
+        var data = await Promise.all(
+            urls.map(url =>
+                    fetch(url).then(
+                        (response) => {return response.json();}
+                    )));
+        return (data);
+
+    } catch (error) {
+        console.log(error);
+        throw (error);
+    }
+};
+
+// getAllUrls also needs to be wrapped in async/await otherwise it can miss slower fetches
+async function collect_data() {
+    var collected_data = await getAllUrls(data_urls);
+    gathered_data = JSON.parse(JSON.stringify(collected_data));
+    console.log('gathered_data');
+    console.log(gathered_data);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</html>

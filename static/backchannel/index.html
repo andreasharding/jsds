@@ -1,0 +1,484 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head> 
+    <meta charset="utf-8" />
+	<title>snoopy</title>
+    <script src="../libs/socket.io.js"></script>
+    <script src="../libs/moment.js"></script>
+    <script src="../libs/jquery-3.4.1.min.js"></script>
+    <script src="../libs/lodash.min.js"></script>
+    <script src="../libs/highlight/highlight.pack.js"></script>
+    
+	<link rel="stylesheet" href="../libs/reveal/lib/css/vs.css">
+	
+	
+	<style>
+	.message {	
+        text-align: left;			
+        width: 500px;					
+        height: 40px;					
+        padding: 2px;				
+        font: 16px sans-serif;		
+        background: lightsteelblue;	
+        border: 0px;		
+        border-radius: 8px;			
+    }
+    
+    @font-face {
+    font-family: 'wc_rhesus_a_btaregular';
+    src: url('../libs/fonts/rhesus/WC_Rhesus_A_Bta-webfont.eot');
+    src: url('../libs/fonts/rhesus/WC_Rhesus_A_Bta-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../libs/fonts/rhesus/WC_Rhesus_A_Bta-webfont.woff2') format('woff2'),
+         url('../libs/fonts/rhesus/WC_Rhesus_A_Bta-webfont.woff') format('woff'),
+         url('../libs/fonts/rhesus/WC_Rhesus_A_Bta-webfont.ttf') format('truetype'),
+         url('../libs/fonts/rhesus/WC_Rhesus_A_Bta-webfont.svg#wc_rhesus_a_btaregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+
+	</style>
+</head>
+
+
+
+
+
+<body>
+<div id="buttons">
+	<button id="start_work_btn">Start</button>
+<!-- 	<button onclick="check_a;">check_a</button> -->
+	<button id="check_s_btn">check_s</button>
+	<button id="start_mxy_btn">start recording mouse</button>
+	<button id="stop_mxy_btn">stop recording mouse</button>
+</div>
+
+
+<div id="ink_blots" style="font-family: 'wc_rhesus_a_btaregular'; font-size: 200px;"></div>
+<div id="window_div_title"><h2>Here's some of the info about your browser already sent to the server:</h2></div>
+<div id="window_div"></div>
+<div id="chatEntries"></div>
+<div id="status"></div>
+<div id="messages"></div>
+<div id="clientInformation"></div>
+<div id="performance"></div>
+<div id="screen"></div>
+
+
+
+
+<script>
+
+hljs.initHighlightingOnLoad();
+
+
+function isObject(obj) {
+    var type = typeof obj;
+    // return type === 'function' || type === 'object' && !!obj;
+    return type === 'object' && !!obj;
+};
+
+
+function get_random_char() {
+	let chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	let rn = Math.floor(Math.random()*chars.length);	
+	return chars.substring(rn, rn + 1);
+}
+
+function iterationCopy(src) {
+    let target = {};
+        for (let prop in src) {
+            if (src.hasOwnProperty(prop)) {
+                // if the value is a nested object, recursively copy all it's properties
+                if (isObject(src[prop])) {
+                    // target[prop] = iterationCopy(src[prop]);
+                } else {
+                    if (target[prop] == null) {
+                     	if (typeof(src[prop]) != 'function') {
+							if (src[prop] != null) {
+								target[prop] = src[prop];
+							} 
+						}
+                    }
+                }
+            }
+        }
+    return target;
+}
+
+
+// console.log('get_random_char', 	_.times(3, get_random_char).join(' '));
+// console.log('get_random_char', get_random_char(3));
+
+/*
+let screenObj = window.screen;
+console.log('screenObj obj', screenObj,  iterationCopy(screenObj), Object.keys(screenObj));
+console.log('screenObj str', JSON.stringify(screenObj));
+console.log('screenObj cln', JSON.stringify(_.cloneDeep(screenObj)));
+
+console.log('window obj', window);
+console.log('navigator obj', navigator);
+console.log('navigator itc', iterationCopy(navigator));
+console.log('navigator cln', _.cloneDeep(navigator));
+console.log('userAgent', navigator.userAgent);
+document.getElementById("window").innerHTML = JSON.stringify( iterationCopy(window) );
+
+try {
+if (typeof(navigator.connection.downlink) === none) {}
+}
+catch(e){}
+
+
+
+OTHER THINGS TO LOOK AT:
+w_obj = {"window": {
+	"screen": {
+		"availWidth": {},
+		"availHeight": {},
+		"width": {},
+		"height": {},
+		"colorDepth": {},
+		"pixelDepth": {},
+		"availLeft": {},
+		"availTop": {},
+		"orientation": {
+			"angle": {},
+			"type": {}
+			}
+		}
+	}
+}
+
+nav_obj = {"navigator": {
+	"vendorSub": {},
+	"productSub": {},
+	"vendor": {},
+	"maxTouchPoints": {},
+	"hardwareConcurrency": {},
+	"cookieEnabled": {},
+	"appCodeName": {},
+	"appName": {},
+	"appVersion": {},
+	"platform": {},
+	"product": {},
+	"userAgent": {},
+	"language": {},
+	"languages": {},
+	"onLine": {},
+	"doNotTrack": {},
+	"deviceMemory": {}
+	}
+}
+	
+	plugins: PluginArray {0: Plugin, 1: Plugin, Chrome PDF Plugin: Plugin, Chrome PDF Viewer: Plugin, length: 2}
+	mimeTypes: MimeTypeArray {0: MimeType, 1: MimeType, application/pdf: MimeType, application/x-google-chrome-pdf: MimeType, length: 2}
+	connection: NetworkInformation {onchange: null, effectiveType: "4g", rtt: 0, downlink: 9.95, saveData: false}
+	userActivation: UserActivation {hasBeenActive: false, isActive: false}
+	
+	
+	geolocation: Geolocation {}
+	mediaCapabilities: MediaCapabilities {}
+	webkitTemporaryStorage: DeprecatedStorageQuota {}
+	webkitPersistentStorage: DeprecatedStorageQuota {}
+	mediaSession: MediaSession {metadata: null, playbackState: "none"}
+	permissions: Permissions {}
+	clipboard: Clipboard {}
+	credentials: CredentialsContainer {}
+	keyboard: Keyboard {}
+	locks: LockManager {}
+	mediaDevices: MediaDevices {ondevicechange: null}
+	serviceWorker: ServiceWorkerContainer {ready: Promise, controller: null, oncontrollerchange: null, onmessage: null}
+	storage: StorageManager {}
+	presentation: Presentation {receiver: null, defaultRequest: null}
+	bluetooth: Bluetooth {}
+	usb: USB {onconnect: null, ondisconnect: null}
+
+
+*/
+
+
+// if (navigator.connection.downlink !== undefined) {console.log('downlink speed', navigator.connection.downlink)};
+/*
+console.log('mimeTypes obj', navigator.mimeTypes);
+console.log('mimeTypes str', JSON.stringify(Object.keys(navigator.mimeTypes)));
+console.log('mimeTypes 0', navigator.mimeTypes[0]);
+console.log('mimeTypes 0 type', navigator.mimeTypes[0].type);
+console.log('mimeTypes 0 suffixes', navigator.mimeTypes[0].suffixes);
+console.log('mimeTypes 0 description', navigator.mimeTypes[0].description);
+*/
+
+let w_obj = {"window": {
+	"screen": {
+		"availWidth": {},
+		"availHeight": {},
+		"width": {},
+		"height": {},
+		"colorDepth": {},
+		"pixelDepth": {},
+		"availLeft": {},
+		"availTop": {},
+		"orientation": {
+			"angle": {},
+			"type": {}
+			}
+		}
+	}
+}
+
+let nav_obj = {"navigator": {
+	"vendorSub": {},
+	"productSub": {},
+	"vendor": {},
+	"maxTouchPoints": {},
+	"hardwareConcurrency": {},
+	"cookieEnabled": {},
+	"appCodeName": {},
+	"appName": {},
+	"appVersion": {},
+	"platform": {},
+	"product": {},
+	"userAgent": {},
+	"language": {},
+	"languages": {},
+	"onLine": {},
+	"doNotTrack": {},
+	"deviceMemory": {}
+	}
+}
+
+
+function get_params(obj, root) {
+	let params = [];
+	let top_objs = Object.keys(obj);
+	// console.log(window);
+	// console.log(top_objs, top_objs.length);//['window']
+	if (top_objs.length > 0) {
+		for (l1_obj in top_objs) {
+			// console.log(top_objs[l1_obj]);//window
+			let L1 = obj[top_objs[l1_obj]];
+			let l1_objs = Object.keys(L1);
+			// console.log(l1_objs, l1_objs.length);//['screen']
+			
+			if (l1_objs.length > 0) {
+				for (l2_obj in l1_objs) {
+					let L2 = l1_objs[l2_obj]; // screen
+					// console.log(L1, l2_obj, l1_objs, L2);
+					let l2_objs = Object.keys(L1[L2]);
+					// console.log(l2_objs);// ["availWidth", "availHeight", "width", "height", "colorDepth", "pixelDepth", "availLeft", "availTop", "orientation"]
+					if (l2_objs.length > 0) {
+						for (l3_obj in l2_objs) {
+							let L3 = l2_objs[l3_obj];
+							// let L3 = JSON.parse(JSON.stringify(l2_objs[l3_obj]));
+							let l3_objs = Object.keys(L1[L2]);
+							let L4 = L1[L2][l3_objs[l3_obj]];
+							let l4_objs = Object.keys(L4);
+							// console.log (L3, L4, l3_objs, l4_objs);
+							if (l4_objs.length > 0) {
+								for (l4_obj in l4_objs) {
+									let L5 = l4_objs[l4_obj];
+									let L5_item;
+									try{
+										if (root == 'navigator') {L5_item = navigator[L2][L3][L5];}
+										if (root == 'window') {L5_item = window[L2][L3][L5];}
+										console.log(L5, L5_item);
+										if (typeof(L5_item) != 'undefined') {
+											params.push({'attribute': L5, 'value': L5_item});
+										}
+									} catch(e){}
+								}
+							} else {
+							
+								let L3_item;
+								if (root == 'navigator') {L3_item = navigator[L2][L3];}
+								if (root == 'window') {L3_item = window[L2][L3];}
+								console.log(L3, L3_item);
+								params.push({'attribute': L3, 'value': L3_item});								
+							}
+						}
+					}
+					let L2_item;
+					if (root == 'navigator') {L2_item = navigator[L2];}
+					if (root == 'window') {L2_item = window[L2];}
+					
+					params.push({'attribute': L2, 'value': L2_item});								
+				}
+			} else {
+				// console.log(l1_obj);
+			}
+		}
+	}
+	return params;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// document.getElementById("ink_blots").innerHTML = _.times(3, get_random_char).join(' ');
+
+
+let zx = JSON.stringify( iterationCopy(window), null, 4)
+// zx = zx.replace('•', '<br />');
+// console.log('zx', zx);
+document.getElementById("window_div").innerHTML = '<pre><code class="json hljs">' + zx + '</code></pre>';
+
+
+// document.getElementById("window_div").innerHTML = JSON.stringify( iterationCopy(window), null, '\t');
+document.getElementById("clientInformation").innerHTML = JSON.stringify( iterationCopy(window.clientInformation) );
+// document.getElementById("performance").innerHTML = JSON.stringify( iterationCopy(window.performance) );
+// document.getElementById("screen").innerHTML = JSON.stringify( iterationCopy(window.screen) );
+
+
+/*
+console.log('window 2', JSON.stringify(Object.assign({}, window)));
+*/
+
+
+let hasWebRTC = navigator.getUserMedia ||
+                navigator.webkitGetUserMedia ||
+                navigator.mozGetUserMedia ||
+                navigator.msGetUserMedia;
+
+if (hasWebRTC) {
+	console.log('This browser is fully or partially WebRTC-capable');
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+function addMessage(msg, payload) {
+    $("#chatEntries").append('<div class="message"><p>' + payload + ' : ' + msg + '</p></div>');
+}
+
+function update_message(msg) {
+    $("#messages").html('<div class="message"><p>' + msg + '</p></div>');
+}
+
+function update_status(data) {
+    $("#status").html('<div class="page"><p>' + data.msg + '</p>Page ' + data.page + ' / ' + data.total_pages + '</p></div>');
+}
+
+
+
+
+let do_socket = true;
+
+let ws = new WebSocket('ws://localhost:40510');
+
+if (do_socket) {
+
+	ws.onopen = function () {
+		console.log('websocket is connected ...');
+		ws.send('connected');
+	}
+
+	ws.onmessage = function (ev) {
+		console.log(ev);
+		if (ev.data == 'snoop') {
+			record_mouse_loc();
+			let w_params = get_params(w_obj, 'window');
+			let n_params = get_params(nav_obj, 'navigator');
+			 // console.log(w_params);
+			 // console.log(n_params);
+			 
+			ws.send(JSON.stringify({'item': 'w_params', 'data': w_params}));
+			// ws.send(JSON.stringify({'item': 'window', 'data': iterationCopy(window)}));
+			ws.send(JSON.stringify({'item': 'n_params', 'data': n_params}));
+			
+		} else {
+			update_message(JSON.stringify(ev.data));
+		}
+	}
+
+
+	function sentMessage() {
+		console.log('sentMessage', new Date().toISOString());
+		addMessage("Me", new Date().toISOString());
+		ws.send("Me", new Date().toISOString());
+	}
+
+	function start_work() {
+		let start_time = moment().format('x');
+		console.log('start_work', start_time);
+		ws.send('start_work', start_time);
+	}
+
+
+	$(function() {
+		$("#start_work_btn").click(function() {start_work()});
+		$("#check_s_btn").click(function() {sentMessage();});
+		$("#start_mxy_btn").click(function() {record_mouse_loc();});
+		$("#stop_mxy_btn").click(function() {unrecord_mouse_loc();});
+	});
+	
+
+}
+
+
+function record_mouse_loc() {
+	console.log('x');
+}
+
+function unrecord_mouse_loc() {
+    document.onmousemove = null;
+}
+
+
+function record_mouse_loc() {
+    document.onmousemove = handleMouseMove;
+    function handleMouseMove(event) {
+        var eventDoc, doc, body;
+
+        event = event || window.event; // IE-ism
+
+        // If pageX/Y aren't available and clientX/Y are,
+        // calculate pageX/Y - logic taken from jQuery.
+        // (This is to support old IE)
+        if (event.pageX == null && event.clientX != null) {
+            eventDoc = (event.target && event.target.ownerDocument) || document;
+            doc = eventDoc.documentElement;
+            body = eventDoc.body;
+
+            event.pageX = event.clientX +
+              (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+              (doc && doc.clientLeft || body && body.clientLeft || 0);
+            event.pageY = event.clientY +
+              (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+              (doc && doc.clientTop  || body && body.clientTop  || 0 );
+        }
+
+        // Use event.pageX / event.pageY here
+        console.log(event.pageX, event.pageY);
+        ws.send('{mouse_loc: [' + event.pageX + ', ' + event.pageY + '], timestamp: ' + Date.now() + '}');
+        
+    }
+}
+// (function() {})();
+
+
+// $("#ink_blots").mouseover(function() {record_mouse_loc()});
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+</script>
+
+</body>
+
+
+
+</html>

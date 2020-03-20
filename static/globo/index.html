@@ -1,0 +1,422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head> 
+	<meta charset="utf-8" />
+	<title>globo</title>
+<!-- 
+	<script src="libs/jquery/jquery-3.4.1.min.js"></script>
+	<script src="libs/lodash.js"></script>
+	<script src="libs/d3/d3.min.js" charset="utf-8"></script>
+	<script src="libs/d3/d3-array.v1.min.js"></script>
+	<script src="libs/d3/d3-geo.v1.min.js"></script>
+	<script src="libs/d3/d3-geo-projection.v2.min.js"></script>
+ -->
+	<script src="../libs/d3.v4.min.js" charset="utf-8"></script>
+	<script src="../libs/topojson.js"></script>
+	<script src='../libs/turf.min.js'></script>
+	<script src='../libs/moment.js'></script>
+
+	<style>
+	div.tooltip {
+		position: absolute;
+		text-align: left;
+		width: 120px;
+		height: 14px;
+		padding: 2px;
+		font: 12px sans-serif;
+		background: lightsteelblue;
+		border: 0px;
+		border-radius: 8px;
+		pointer-events: none;
+	}
+	.graticule {
+		fill: none;
+		stroke: #00f;
+		stroke-opacity: .35;
+		stroke-width: .5px;
+	}
+	</style>
+
+</head>
+
+
+
+
+<body>
+
+<div id="map" style="width: 100%; height: 100%;"></div>
+
+
+<script>
+
+// d3 = require("https://d3js.org/d3.v4.min.js")
+
+// Define the div for the tooltip
+let div = d3.select("body").append("div")
+	.attr("class", "tooltip")
+	.style("opacity", 0);
+
+let width = d3.select("#map").node().getBoundingClientRect().width;
+let height = 800, k_val;
+const sensitivity = 75;
+const city_dot_radius = 0.1;
+
+
+// geoAzimuthalEqualArea
+// let projection = d3.geoEquirectangular()
+let projection = d3.geoOrthographic()
+	.scale(250)
+	.center([0, 0])
+	.rotate([0,-30])
+	.translate([width / 2, height / 2]);
+
+
+const initialScale = projection.scale();
+let path = d3.geoPath().projection(projection);
+
+let svg = d3.select("#map")
+	.append("svg")
+	.attr("width", width)
+	.attr("height", height);
+
+let globe = svg.append("circle")
+	.attr("fill", "#EEE")
+	.attr("stroke", "#000")
+	.attr("stroke-width", "0.2")
+	.attr("cx", width/2)
+	.attr("cy", height/2)
+	.attr("r", initialScale);
+
+svg.call(d3.drag().on('drag', () => {
+	const rotate = projection.rotate();
+	const k = sensitivity / projection.scale();
+	projection.rotate([
+		rotate[0] + d3.event.dx * k,
+		rotate[1] - d3.event.dy * k
+	])
+	path = d3.geoPath().projection(projection);
+	path.pointRadius([0.5 * projection.scale() / initialScale]);//  * city_dot_radius
+	// console.log('drag projection.scale()', projection.scale());
+	// console.log('drag k_val', k_val);
+	svg.selectAll("path").attr("d", path);
+
+//	 svg.selectAll(".ne_50m_populated_places")
+//		 .selectAll("circle")
+//			 .attr("cx", (d) => {return projection(d.geometry.coordinates)[0];})
+//			 .attr("cy", (d) => {return projection(d.geometry.coordinates)[1];});
+
+}))
+.call(d3.zoom().on('zoom', () => {
+	if(d3.event.transform.k > 0.3) {
+		projection.scale(initialScale * d3.event.transform.k);
+		path = d3.geoPath().projection(projection);
+		// console.log('zoom', d3.event.transform);
+		// this sort of works to scale points  / 0.2 *  initialScale
+		path.pointRadius([0.5 * d3.event.transform.k]);//  * city_dot_radius
+		svg.selectAll("path").attr("d", path);
+		globe.attr("r", projection.scale());
+		k_val = d3.event.transform.k;
+
+//		 svg.selectAll(".ne_50m_populated_places")
+//			 .selectAll("circle")
+//				 .attr("cx", (d) => {return projection(d.geometry.coordinates)[0];})
+//				 .attr("cy", (d) => {return projection(d.geometry.coordinates)[1];});
+	}
+	else {
+		d3.event.transform.k = 0.3
+	}
+}))
+
+let map = svg.append("g")
+
+const map_url = './data/world_c.topojson';
+// const map_url = './data/';
+/*
+get map data from https://gisgeography.com/best-free-gis-data-sources-raster-vector/
+world_map.geojson
+simple_world_countries.json
+China_Province_49.topojson
+Ukraine.topojson
+World_Administrative_Divisions_1_1.topojson
+World_Administrative_Divisions_1_3.topojson
+world.topojson
+world_c.topojson
+
+*/
+
+d3.json(map_url, function(err, d) {
+console.log(d);
+
+map.append("g")
+	.attr("class", "countries" )
+	.selectAll("path")
+//	 .data(d.features) // for geojson
+	.data(topojson.feature(d, d.objects.World_Countries_Generalized).features) // for topojson
+	.enter().append("path")
+	.attr("class", d => "country_" + d.properties.Country.replace(" ","_"))
+	.attr("d", path)
+	.attr("fill", "white")
+	.style('stroke', 'black')
+	.style('stroke-width', 0.3)
+	.style("opacity",0.8)
+	.on("mouseover", function(d) {
+		div.transition()
+			.duration(100)
+			.style("opacity", .9);
+		div	.html("<b>" + d.properties.Country + "</b>")
+			.style("left", (d3.event.pageX) + "px")
+			.style("top", (d3.event.pageY - 28) + "px");
+		})
+	.on("mouseout", function(d) {
+		div.transition()
+			.duration(200)
+			.style("opacity", 0);
+	})
+
+// special map of China's provinces
+map.append("g")
+	.attr("class", "china" )
+	.selectAll("path")
+	.data(topojson.feature(d, d.objects.China_Province).features) // for topojson
+	.enter().append("path")
+	.attr("class", d => "province" + d.properties.NAME_PINGY.replace(" ","_"))
+	.attr("d", path)
+	.attr("fill", "#ffecea")
+	.style('stroke', 'black')
+	.style('stroke-width', 0.3)
+	.style("opacity",0.8)
+	.on("mouseover", function(d) {
+		div.transition()
+			.duration(100)
+			.style("opacity", .9);
+		div	.html("<i>" + d.properties.NAME_PINGY + "</i>")
+			.style("left", (d3.event.pageX) + "px")
+			.style("top", (d3.event.pageY - 28) + "px");
+		})
+	.on("mouseout", function(d) {
+		div.transition()
+			.duration(200)
+			.style("opacity", 0);
+	})
+
+
+// populated places as dots
+/*
+map.append("g")
+	.attr("class", "ne_50m_populated_places" )
+	.selectAll("circle")
+	.data(topojson.feature(d, d.objects.ne_50m_populated_places).features)
+	.enter().append("circle")
+	.attr("cx", (d) => {return projection(d.geometry.coordinates)[0];})
+	.attr("cy", (d) => {return projection(d.geometry.coordinates)[1];})
+	.attr("r", 1.5)
+	.attr("fill", "#f00")
+	.style("opacity",0.8)
+	.on("mouseover", function(d) {
+		console.log(d.properties.name_en, d.geometry.coordinates, projection.invert(d.geometry.coordinates)); 
+		div.transition()
+			.duration(100)
+			.style("opacity", .9);
+		div	.html(d.properties.name_en)
+			.style("left", (d3.event.pageX) + "px")
+			.style("top", (d3.event.pageY - 28) + "px");
+		})
+	.on("mouseout", function(d) {
+		div.transition()
+			.duration(200)
+			.style("opacity", 0);
+	})
+*/
+
+
+/*
+let zcircles = () => {
+  const step = 10;
+  const circle = d3.geoCircle().center(d => d).radius(step / 4).precision(10);
+  const coordinates = [];
+  for (let y = -80; y <= 80; y += step) {
+	for (let x = -180; x < 180; x += step) {
+	  coordinates.push(circle([x, y]).coordinates);
+	}
+  }
+  return {type: "MultiPolygon", coordinates};
+}
+
+console.log(zcircles());
+*/
+
+
+let show_graticule = true;
+let graticule = d3.geoGraticule10();
+// let graticule = d3.geoGraticule()
+//	 .step([graticule_x, graticule_y]);
+
+
+// add graticule on top of everything
+if (show_graticule) {
+	var graticule_g = svg.append("svg:g").attr("id", "graticule");
+	graticule_g.append("path")
+		.datum(graticule)
+		.attr("class", "graticule")
+		.attr("fill", "none")
+		.attr("stroke", "#00f")
+		.attr("stroke-opacity", "0.35")
+		.attr("d", path);
+}
+
+
+
+let filtered_places = {geometries: [], type: "GeometryCollection"};
+let special_country_codes = ['CN'];
+
+for (let i = 0; i < d.objects.ne_50m_populated_places.geometries.length; i++) {
+	if (d.objects.ne_50m_populated_places.geometries[i].properties.ISO_A2 != special_country_codes[0]) {
+		filtered_places.geometries.push(d.objects.ne_50m_populated_places.geometries[i]);
+	}
+}
+
+
+// console.log(filtered_places);
+// console.log(topojson.feature(d, filtered_places));
+
+map.append("g")
+	.attr("class", "ne_50m_populated_places" )
+	.selectAll("path")
+//	 .data(topojson.feature(d, d.objects.ne_50m_populated_places).features)
+	.data(topojson.feature(d, filtered_places).features)
+	.enter().append("path")
+	.attr("d", (d) => {return path( d3.geoCircle().center(d.geometry.coordinates).radius(city_dot_radius)() )})
+	.attr("fill", "#4332ff")
+	.on("mouseover", function(d) {
+		div.transition()
+			.duration(100)
+			.style("opacity", .9);
+		div	.html(d.properties.name_en)
+			.style("left", (d3.event.pageX) + "px")
+			.style("top", (d3.event.pageY - 28) + "px");
+		})
+	.on("mouseout", function(d) {
+		div.transition()
+			.duration(200)
+			.style("opacity", 0);
+	})
+
+
+
+
+
+})
+
+
+/**
+*   Cleans up data - particularly the date string. 
+*   Stores as Date object, local date (as string) and local hour (as integer)
+*   Collects city and province names - https://www.latlong.net/category/cities-46-15.html
+*/
+
+let cities = new Set();
+let provinces = new Set();
+
+function clean_ncv_data(ncv) {
+	let local_date_hour;
+	for (let i = 0; i < ncv.length; i++) {
+		ncv[i]['utc_timestamp'] = new Date(ncv[i].sample_mark + ":00:00+08:00");
+		local_date_hour = ncv[i].sample_mark.split('T');
+		ncv[i]['local_date'] = local_date_hour[0];
+		ncv[i]['local_hour'] = +local_date_hour[1];
+
+		// for tier 1 cities mostly, 'city' field is null, so copy province into city so there are no gaps
+		// this may be obsolete if this is done in postgres
+		if (ncv[i].cityenglishname == null) {
+			cities.add(ncv[i].provinceenglishname);
+			ncv[i].cityenglishname = ncv[i].provinceenglishname;
+		} else {
+			cities.add(ncv[i].cityenglishname);
+		}
+
+		provinces.add(ncv[i].provinceenglishname);
+
+	}
+
+	cities.keys()
+	console.log('cities', cities.keys());
+	console.log('provinces', provinces.keys());
+//	 cities.forEach((value, valueAgain, cities) => {
+//		 console.log(value);
+//	 });
+
+}
+
+
+function collect_by_time(flat_data) {
+	let time_data = {};
+	for (let i = 0; i < flat_data.length; i++) {
+		let x = flat_data[i]['local_date'];
+		let y = flat_data[i]['local_hour'];
+		if(time_data[x]) {
+			if (i < 8) {
+				console.log('A', flat_data[i]['local_date'], time_data[flat_data[i]['local_date']]);
+			}
+			if(time_data[x][y]) {
+				time_data[x][y].push(flat_data[i]);
+			} else {
+				time_data[x][y] = [flat_data[i]];
+			}
+
+		} else {
+			if (i < 8) {
+				console.log('B', x, y);
+			}
+			time_data[x] = {};
+			time_data[x][y] = [flat_data[i]];
+		}
+
+
+	}
+	return time_data;
+}
+
+
+let root_url = location.protocol + '//' + location.hostname + (location.port ? ':'+location.port: '') + '/';
+console.log('fetch root_url', root_url);
+
+// http://localhost:3000/ajax?q=ncv&city=Wuhan&date=2020-02-02
+
+fetch(root_url + "ajax?q=ncv&city=Wuhan&date=2020-02-02")
+	.then(response_t => response_t.json())
+	.then(function(ncv) {
+		clean_ncv_data(ncv)
+		console.log('ncv', ncv);
+		let ncv_time_marked = collect_by_time(ncv);
+		console.log('ncv_time_marked', ncv_time_marked);
+	})
+	.catch(function(error) {
+		// If there is any error you will catch them here
+		console.log('Something went wrong', error);
+	}); 
+
+/**/
+
+
+//Optional rotate
+/*
+d3.timer(function(elapsed) {
+const rotate = projection.rotate()
+const k = sensitivity / projection.scale()
+projection.rotate([
+  rotate[0] - 1 * k,
+  rotate[1]
+])
+path = d3.geoPath().projection(projection)
+svg.selectAll("path").attr("d", path)
+},200)
+*/
+
+
+</script>
+
+</body>
+
+
+</html>

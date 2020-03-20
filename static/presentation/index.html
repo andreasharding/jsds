@@ -1,0 +1,310 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>JSDS: Servers</title>
+
+		<link rel="stylesheet" href="../libs/reveal/css/reset.css">
+		<link rel="stylesheet" href="../libs/reveal/css/reveal.css">
+		<link rel="stylesheet" href="../libs/reveal/css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+<!-- 		<link rel="stylesheet" href="../libs/reveal/lib/css/monokai.css"> -->
+<!-- 		<link rel="stylesheet" href="../libs/reveal/lib/css/tomorrow-night.css"> -->
+		<link rel="stylesheet" href="../libs/reveal/lib/css/vs.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../libs/reveal/css/print/pdf.css' : '../libs/reveal/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+		<style>
+			.clean_img {
+				margin: 0px !important;
+				border: none !important;
+				box-shadow: none !important;
+			}
+			h3 {
+				color: #f00 !important;
+			}
+			.highlighted {
+				color: #ff7f00 !important;
+				font-style: italic;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section><br />
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h3 class="highlighted">Why would you do that?</h3>
+				</section>
+				
+				<section><br />
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h3 class="highlighted">Why would you do that?</h3>
+					<ul>
+						<li>because data scientists do web dev too...</li>
+						<li>because there <em>are</em> actually libraries for data analysis</li>
+						<li>because you can do things not possible elsewhere</li>
+					</ul>
+				</section>
+				
+				<section><br />
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h3 class="highlighted">Why would you NOT do that?</h3>
+					<ul>
+						<li>if what you are doing genuinely only exists elsewhere</li>
+						<li>if performance is critical</li>
+						<li style="text-decoration: line-through;">if you think it is too difficult to learn</li>
+					</ul>
+				</section>
+				
+				<section><br />
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h3 class="highlighted">What is this all about?</h3>
+					<p>This is about building things directly in JavaScript rather than indirectly in R or Python using clumsy tools that behind the scenes use JavaScript anyway.  
+					This can be <b>easier to build</b>, <b>run quicker</b> and <b>look better</b></p>
+				</section>
+				
+				<section><br />
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h3 class="highlighted">What is this all about?</h3>
+					<p>The aim is to build a web app that reads in data, draws graphs and charts with the data, and maybe a map too.</p>
+					<p>This project does things in small chunks, starting with a look a web servers...</p>
+				</section>
+				
+				<section>
+					<h2>0. Servers</h2>
+					<h3 class="highlighted">What do they do?</h3>
+					<ul>
+						<li>different types of server: traditional v code-based</li>
+						<li>how they respond to different types request</li>
+						<li>keeping track of user requests (cookies and sessions)</li>
+					</ul>
+					<p>There will be some code to set up a minimal server</p>
+					<p>This will be used for the client app to be built next</p>
+				</section>
+				
+
+		
+		
+				
+				<section>
+					
+                    <section>
+                        <h2>1. Get data</h2>
+                        <h3 class="highlighted">Introduction to async programming</h3>
+                        <p>This is just the way things are on the Internet.<br />
+                        Async programming means your code doesn't stop dead while it waits for a slow resource to respond.</p>
+                    </section>
+
+                    <section>
+                        <p>Explore various ways of getting data, including:</p>
+                        <ul>
+                            <li>native JavaScript: fetch and XMLHttpRequest</li>
+                            <li>jQuery: $.ajax({})</li>
+                            <li>d3: d3.csv(input[, init][, row]) </li>
+                            <li>axios: axios.get(url[, config])</li>
+                        </ul>
+                        <p>Also: importing and parsing csv files: PapaParse</p>
+                    </section>
+					
+				</section>
+
+				
+
+		
+		
+				
+				<section>
+                    <section>
+                        <h2>2. Wrangle data</h2>
+                        <h3 class="highlighted">The joys of JSON</h3>
+                        <p>JSON is native to JavaScript, so is easy to deal with. <br />You just need to think <em>serially</em></p>
+                    </section>
+                    
+                    <section>
+                        <p>Do you even need to convert it into a data frame?</p>
+                        <p>With JSON you iterate through data sequentially. <br />This is a different way of wrangling data, but you'll soon get the hang of it.</p>
+                        <p>Here are some things that will help:</p>
+                        <ul>
+                            <li>native JavaScript: Array iteration</li>
+                            <li>lodash.js</li>
+                            <li>d3.csvParse(string[, row])</li>
+                        </ul>
+                    </section>
+				</section>
+
+				
+
+		
+		
+				
+				<section>
+					<h2>3. More data wrangling</h2>
+					<h3 class="highlighted">I am a rectangle...</h3>
+					<p>Often in data science, <em>tidy data</em> is the preferred default data arrangement.</p>
+					<p>If performance is an issue, you should consider using a database to process large quantities of data and only use aggregations/subsets in your analytical platform.</p>
+                    <p>If you <em>must</em> do this outside of a database, then <a href="http://www.data-forge-js.com">Data Forge</a> is one option</p>
+				</section>
+
+				
+
+		
+		
+				
+				<section>
+					<h2>4. Data visualisation</h2>
+					<h3 class="highlighted">graphing/charting</h3>
+					<p>Just an overview of what is available – much more than ggplot/plotly/matplotlib</p>
+					<ul>
+						<li>apex charts</li>
+						<li>vega/vega-lite</li>
+						<li>plotly.js</li>
+						<li>chartist</li>
+						<li>etc.</li>
+					</ul>
+					<p></p>
+				</section>
+
+				
+
+		
+		
+				
+				<section>
+					<h2>5. Data visualisation</h2>
+					<h3 class="highlighted">network graphing</h3>
+					<ul>
+						<li>sigma.js</li>
+                        <li>ogma</li>
+                        <li>cytoscape.org</li>
+                        <li>https://visjs.org/</li>
+                        <li>http://jsnetworkx.org/</li>
+					</ul>
+				</section>
+
+				
+
+		
+		
+				
+				<section>
+					<h2>6. Maps</h2>
+					<h3 class="highlighted">How to display geographic data</h3>
+					<ul>
+						<li>map utilities (e.g. mapshaper)</li>
+						<li>different cartographic projections</li>
+						<li>d3-geo</li>
+						<li>geojson/topojson</li>
+					</ul>
+					<p></p>
+					<p></p>
+				</section>
+
+				
+
+		
+		
+				
+				<section>
+				    <section>
+                        <h2>7. Building web pages</h2>
+                        <h3 class="highlighted">HTML, CSS frameworks, etc.</h3>
+                        <p>Tools to help you build web pages</p>
+                        <ul>
+                            <li>Bootstrap</li>
+                            <li>Foundation</li>
+                            <li>Semantic</li>
+                            <li>etc.</li>
+                        </ul>
+					</section>
+					
+					<section>
+                        <h3 class="highlighted">Deconstructing web pages</h3>
+                        <p>When webscraping, you do the opposite, and programmatically dig into the HTML:</p>
+                        <ul>
+                            <li>jQuery</li>
+                            <li>cheerio (server-side equivalent to jQuery)</li>
+                            <li>comparison with BeautifulSoup</li>
+                        </ul>
+					</section>
+				</section>
+				
+
+		
+		
+				
+				<section>
+					<h2>8. Odds and ends</h2>
+					<h3 class="highlighted">Encroaching on others' territory</h3>
+					<ul>
+						<li>Maths and stats e.g. <a href="https://alpha.iodide.io/">iodide</a></li>
+						<li><a href="https://gist.github.com/jo/8619441">Cryptography</a></li>
+						<li>Performance: GPUs and WebAssembly</li>
+						<li>Machine learning and neural networks</li>
+						<li>Running Python in the browser... <a href="http://skulpt.org/">skulpt</a> &amp;  <a href="https://github.com/iodide-project/pyodide/">pyodide</a></li>
+					</ul>
+					<p>What about all the classic development stuff like testing, automating tasks, bundling, making modules...?</p>
+					<p>That's all too important to be covered here...</p>
+				</section>
+				
+
+		
+		
+				
+				<section>
+					<h2>Selected references</h2>
+					<ul>
+						<li>A good general tutorial <a href="https://javascript.info/">https://javascript.info/</a></li>
+						<li>MDN: Learn web development <a href="https://developer.mozilla.org/en-US/docs/Learn">https://developer.mozilla.org/en-US/docs/Learn</a></li>
+						<li>Using JavaScript in data science <a href="http://js4ds.org/">http://js4ds.org/</a></li>
+						<li>D3 book <a href="http://using-d3js.com/index.html">http://using-d3js.com/index.html</a></li>
+					</ul>
+				</section>
+				
+
+
+
+
+
+		
+		
+				
+				
+			
+			</div>
+		</div>
+
+		<script src="../libs/reveal/js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				hash: true,
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+				center: false,				
+				dependencies: [
+					{ src: '../libs/reveal/plugin/markdown/marked.js' },
+					{ src: '../libs/reveal/plugin/markdown/markdown.js' },
+					{ src: '../libs/reveal/plugin/highlight/highlight.js', async: true },
+					{ src: '../libs/reveal/plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>

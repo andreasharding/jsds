@@ -1,0 +1,12 @@
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+
+# Thumbnails
+._*
+
+node_modules/
+sql/
+tests_and_demos/

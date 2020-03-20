@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>JSDS: Getting Data</title>
+
+		<link rel="stylesheet" href="../libs/reveal/css/reset.css">
+		<link rel="stylesheet" href="../libs/reveal/css/reveal.css">
+		<link rel="stylesheet" href="../libs/reveal/css/theme/simple.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+<!-- 		<link rel="stylesheet" href="../libs/reveal/lib/css/monokai.css"> -->
+<!-- 		<link rel="stylesheet" href="../libs/reveal/lib/css/tomorrow-night.css"> -->
+		<link rel="stylesheet" href="../libs/reveal/lib/css/vs.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../libs/reveal/css/print/pdf.css' : '../libs/reveal/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+		<style>
+			.clean_img {
+				margin: 0px !important;
+				border: none !important;
+				box-shadow: none !important;
+			}
+			h3 {
+				color: #f00 !important;
+			}
+			.highlighted {
+				color: #ff7f00 !important;
+				font-style: italic;
+			}
+		</style>
+
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+                    <img class= "clean_img" src="./images/JavaScript_logo.png" width="160px" height="160px">
+					<h2>JavaScript in Data Science</h2>
+					<h2 class="highlighted">Part 1: Getting Data</h2>
+				</section>
+				
+				<section>
+					<h2>The data science workflow</h2>
+					<h3 class="highlighted">Where does getting data fit in...</h3>
+                    <br/>
+                    <p><img class= "clean_img" src="./images/data-science-workflow-szilard.png"></p>
+					<!-- 
+<p><small>Some other ideas to think about:<br/>
+					<a href="https://www.storybench.org/getting-started-with-tidyverse-in-r/">The principles behind R's tidyverse</a></small></p>
+ -->
+				</section>
+				
+				<section>
+					<h2>The data science workflow</h2>
+					<h3 class="highlighted">Where does getting data fit in...</h3>
+                    <br/>
+                    <p><img class= "clean_img" src="./images/ds_flow.png"></p>
+				</section>
+				
+				
+				<section>
+                    <section>
+                        <h2>The data science workflow</h2>
+                        <h3 class="highlighted">Where does JavaScript fit in?</h3>
+                        <p>JavaScript isn't an end-to-end solution</p>
+                        <img class= "clean_img" src="./images/ds_flow_js.png">
+                    </section>
+                
+                    <section>
+                        <h2>The data science workflow</h2>
+                        <h3 class="highlighted">Where do R and Python fit in?</h3>
+                        <p>These aren't end-to-end solutions either...</p>
+                        <img class= "clean_img" src="./images/python_r_workflow.png">
+                        <br/>
+                        <small><a href="https://www.r-bloggers.com/r-and-python-how-to-integrate-the-best-of-both-into-your-data-science-workflow/">A biased suggestion for multiple languages (but only Python and R...)</a></small>
+                    </section>
+				</section>
+
+
+				
+                <section>
+                    <h2>JavaScript likes the web:</h2>
+                    <h3 class="highlighted">...it is inherently asynchronous</h3>
+                    <br/>
+                    <img class= "clean_img" src="./images/sync_v_async.png ">
+                    <p>
+                    
+                    <small><a href="https://insights.stackoverflow.com/survey/2019/#most-loved-dreaded-and-wanted">Language popularity</a></small>
+                    https://thenewstack.io/which-programming-languages-use-the-least-electricity/
+                    </p>
+
+                </section>
+
+				<section>
+                    <section>
+                        <h2>About asynchronous coding</h2>
+                        <h3 class="highlighted">callbacks, promises and ... waiting</h3>
+                        <ul>
+                            <li>callbacks are functions supplied to other functions</li>
+                            <li>promises are tidier</li>
+                            <li><code>async</code> and <code>await</code> make code look synchronous</li>
+                        </ul>
+                        <br/>
+                        <p>
+                            <small><a href="https://medium.com/dev-bits/writing-neat-asynchronous-node-js-code-with-promises-32ed3a4fd098">Promises can be combined with async/await, as in this tutorial</a></small>
+                        </p>
+
+                    </section>
+                    
+					<section>
+                        <h3 class="highlighted">callbacks</h3>
+						A callback function is a function that is passed to another function  as a parameter, and the callback function is called (or executed) inside the otherFunction. A callback function is essentially a pattern (an established solution to a common problem), and therefore, the use of a callback function is also known as a callback pattern.
+						
+						<pre><code class="js hljs">var friends = ["Mike", "Stacy", "Andy", "Rick"];
+
+friends.forEach(function (eachName, index){
+console.log(index + 1 + ". " + eachName); // 1. Mike, 2. Stacy, 3. Andy, 4. Rick
+});
+						</code></pre>
+                        <small><a href="http://javascriptissexy.com/understand-javascript-callback-functions-and-use-them/">understand callbacks</a></small>
+					</section>
+				
+					<section>
+						<h2></h2>
+						<h3></h3>
+						<h3></h3>
+							<ul>
+							</ul>
+						<br/>
+						<p>
+						
+                        <small><a href="https://thecodinginterface.com/blog/bridging-nodejs-and-python-with-pynode/">Connecting Python and Node.js</a></small>
+                        <small><a href="https://github.com/fridgerator/PyNode">PyNode</a></small>
+						</p>
+
+					</section>
+				
+
+				
+
+					</section>
+
+				
+				
+				
+				
+				
+				
+			
+			</div>
+		</div>
+
+		<script src="../libs/reveal/js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				hash: true,
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+				center: false,				
+				dependencies: [
+					{ src: '../libs/reveal/plugin/markdown/marked.js' },
+					{ src: '../libs/reveal/plugin/markdown/markdown.js' },
+					{ src: '../libs/reveal/plugin/highlight/highlight.js', async: true },
+					{ src: '../libs/reveal/plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>

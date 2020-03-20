@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head> 
+    <meta charset="utf-8" />
+	<title>ICED</title>
+	<link href="../libs/semantic/f_semantic.min.css" rel="stylesheet" type="text/css">
+<!--     <link href="../libs/c3/c3.css" rel="stylesheet" type="text/css"> -->
+	<script src="../libs/jquery-3.4.1.min.js"></script>
+	<script src="../libs/lodash.min.js"></script>
+	<script src="../libs/semantic/f_semantic.min.js"></script>
+	<script src="../libs/d3/d3.min.js" charset="utf-8"></script>
+<!--     <script src="../libs/c3/c3.min.js"></script> -->
+	<script src="../libs/topojson.js"></script>
+    <script src="../libs/d3/d3-array.v1.min.js"></script>
+    <script src="../libs/d3/d3-geo.v1.min.js"></script>
+    <script src="../libs/d3/d3-geo-projection.v2.min.js"></script>
+<!-- 	<script src="../libs/vue.runtime.min.js"></script> -->
+	<script src="../libs/apexcharts.min.js"></script>
+<!-- 	<script src="../libs/vue-apexcharts.js"></script> -->
+	
+	<style>
+	div.tooltip {	
+        position: absolute;			
+        text-align: left;			
+        width: 180px;					
+        height: 48px;					
+        padding: 2px;				
+        font: 12px sans-serif;		
+        background: lightsteelblue;	
+        border: 0px;		
+        border-radius: 8px;			
+        pointer-events: none;			
+    }
+	</style>
+
+</head>
+
+
+
+
+
+<body>
+<div class="ui three column grid">
+	<div class="one wide column"></div>
+	<div class="fourteen wide column">
+        <h1>International Climate and Energy: carbon pricing explorer</h1>
+		
+        <div class="ui menu grey inverted" id="main_menu">
+
+            <a class="browse item">
+                <i class="sliders horizontal icon"></i> Controls
+                <i class="dropdown icon"></i>
+            </a>
+            
+            <!-- start controls -->
+            <div class="ui fluid popup bottom left transition hidden" style="top: 554px; left: 1px; bottom: auto; right: auto; width: 756px;">
+                
+                <div class="ui two column relaxed divided grid">
+                    <div class="column">
+            
+                      <div class="sixteen wide column">
+                        
+                        <div id="variables_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="calendar alternate icon"></i>
+                                Date
+                            </h4>
+                            <br />
+                            <div class="ui red labeled ticked range slider" id="slider-range-year"></div>
+                            <br />&nbsp;<br />
+                        </div>
+                      </div>
+
+                        <div id="country_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="globe icon"></i>
+                                Country controls
+                            </h4>
+                            <br />
+                            <div id="iced_countries" class="ui floating search multiple selection dropdown">
+                                <span class="text"></span>
+                                <input type="hidden" name="diacritics">
+                                <i class="dropdown icon"></i>
+                            </div>
+                            <br />&nbsp;<br />&nbsp;<br />
+                        </div>
+
+
+                        <div id="variables_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="clipboard list icon"></i>
+                                Data variables
+                            </h4>
+                            
+							<div class="ui two column grid">
+								<div class="seven wide column">
+		                            <h5 class="ui header">Top categories</h5>
+		                            <div id="types_api_menu" class="ui dropdown">
+		                                <i class="certificate icon"></i>
+		                                <div class="text">top_categories</div>
+		                                <i class="dropdown icon"></i>
+		                            </div>     
+								</div>
+								<div class="seven wide column">
+		                            <h5 class="ui header">Variables</h5>
+		                            <div id="vars_api" class="ui dropdown">
+		                                <i class="arrow alternate circle right icon"></i>
+		                                <div class="text">variable 1</div>
+		                                <i class="dropdown icon"></i>
+		                            </div>
+		                            <br />
+		                            <div id="vars2_api" class="ui dropdown">
+		                                <i class="arrow alternate circle right icon"></i>
+		                                <div class="text">variable 2</div>
+		                                <i class="dropdown icon"></i>
+		                            </div>
+		                            <br />
+		                            <div id="vars3_api" class="ui dropdown">
+		                                <i class="arrow alternate circle right icon"></i>
+		                                <div class="text">variable 3</div>
+		                                <i class="dropdown icon"></i>
+		                            </div>     
+							 	</div>
+							</div>
+
+                           
+                        </div>
+
+
+                    </div>
+
+                    <div class="column">
+                        <div id="bau_chart_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="bar chart icon"></i>
+                                BAU chart controls
+                            </h4>
+                            <br />
+                            <button id="update_bau_chart" class="ui red button">update bau chart</button>
+                            <br />&nbsp;<br />&nbsp;<br />
+                        </div>
+                        <div id="macc_chart_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="line chart icon"></i>
+                                MACC chart controls
+                            </h4>
+                            <br />
+                            <button id="update_macc_chart" class="ui blue button">update macc chart</button>
+                            <br />&nbsp;<br />&nbsp;<br />
+                        </div>
+                        <div id="map_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="map icon"></i>
+                                Map controls
+                            </h4>
+                            <br />
+                            <button id="update_map_btn" class="ui orange button">update map</button>
+                            <button id="random_map_btn" class="ui orange button">randomise map</button>
+                            <button id="flat_map_btn" class="ui orange button">flatten map</button>
+                            <br />&nbsp;<br />&nbsp;<br />
+                       </div>
+                        <div id="bubble_chart_controls">
+                            <h4 class="ui horizontal left aligned divider header">
+                                <i class="line chart icon"></i>
+                                Bubble chart controls
+                            </h4>
+                            <br />
+                            <button id="update_bubble_chart" class="ui purple button">update bubble chart</button>
+                            <br />&nbsp;<br />&nbsp;<br />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <!-- end controls -->
+
+            <div class="ui tabular menu">
+                <div class="active item" data-tab="tab-intro">Introduction</div>
+                <div class="item" data-tab="tab-time">Time Series</div>
+                <div class="item" data-tab="tab-carbon">Carbon Pricing</div>
+                <div class="item" data-tab="tab-map">Maps and Rankings</div>
+                <div class="item" data-tab="tab-analysis">Analysis</div>
+            </div>
+
+        </div>
+
+
+
+        <div class="ui tab active" data-tab="tab-intro">
+            <h2>Introduction to ICED</h2>
+             <p id="tab_intro_p"></p>
+        </div>
+        
+        
+        
+        <div class="ui tab" data-tab="tab-time">
+            <h2>Time Series <span id="tab_time_s"></span></h2>
+            <div id="chart"></div>
+        </div>
+
+
+
+        <div class="ui tab" data-tab="tab-carbon" id="tab_carbon">
+            <h2>Carbon Pricing</h2>
+            <div id="macc_chart"></div>
+        </div>
+
+
+
+        <div class="ui tab" data-tab="tab-map">
+            <h2>Maps and Rankings <span id="tab_map_s"></span></h2>
+            <div id="map" class="ui container" style="width:100%;"></div>
+        </div>
+
+
+
+        <div class="ui tab" data-tab="tab-analysis" id="tab_analysis">
+            <h2>Analysis</h2>
+            <div id="bubble_chart"></div>            
+        </div>
+
+
+    </div>
+    
+    <div class="one wide column"></div>
+    
+</div>
+
+
+<div id="result"></div>
+
+
+</body>
+
+
+
+
+<script src="./iced.js"></script>
+
+
+
+
+</html>
