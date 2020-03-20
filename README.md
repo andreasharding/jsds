@@ -45,10 +45,12 @@ Installation
 ------------
 This repo doesn't have any dependencies included, so you will have to install these before running:
 
-`cd /path/to/jsds/`
+`cd /path/to/jsds/`<br />
 `npm install`
 
+
 and/or - for Python:
+
 `pip install Flask`
 
 You should also have R installed on your computer.
@@ -57,13 +59,13 @@ You should also have R installed on your computer.
 Running
 -------
 
-This is set up to run from a node.js + express server: 
+This is set up to run from a node.js + express server: <br />
 `node index.js` (do this in a terminal window!)
 
-However, for those who cannot use npm (i.e. because their machine is behind a firewall), there is a minimal server:
+However, for those who cannot use npm (i.e. because their machine is behind a firewall), there is a minimal server: <br />
 `node simple_server.js`
 
-or, if you prefer, a Python equivalent using Flask:
+or, if you prefer, a Python equivalent using Flask: <br />
 `python simple_server.py`
 
 For completeness, if you were to run this from a traditional LAMP setup, the ajax calls for the ICED demo can use the php script `get_data.php`
