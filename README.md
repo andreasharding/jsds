@@ -57,8 +57,9 @@ Note: the demos are intended to run with the full, Express, server (index.js) - 
 
 <h3>Some reading material to get you started</h3>
 <ul>
-<li>A good general tutorial <a href="https://javascript.info/">https://javascript.info/</a></li>
 <li>MDN: Learn web development <a href="https://developer.mozilla.org/en-US/docs/Learn">https://developer.mozilla.org/en-US/docs/Learn</a></li>
+<li>A general tutorial <a href="https://javascript.info/">https://javascript.info/</a></li>
+<li>A book on JavaScript, and also programming<a href="https://eloquentjavascript.net/">https://eloquentjavascript.net/</a></li>
 <li>Using JavaScript in data science <a href="http://js4ds.org/">http://js4ds.org/</a></li>
 <li>D3 book <a href="http://using-d3js.com/index.html">http://using-d3js.com/index.html</a></li>
 </ul>
