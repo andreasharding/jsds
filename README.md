@@ -7,9 +7,13 @@ It started as a rewrite of an R-Shiny project that had no analytical code: it wa
 
 It is intended to help data scientists, who often use only R and/or Python, to do things like create data visualisations directly in JavaScript. If the data science project is intended to be presented to the end user in a web browser, doing it in JavaScript is often better and easier than having to rely on indirect tools like Shiny (some simple use-cases excepted...).
 
-It may require a bit of extra work, but this should be repaid in many ways, such as more choice of tools and better performance.
+Each stage in this project tackles distinct techniques or processes used in building common data science / data visualisation *websites*.
 
-It is a work in progress: proper documentation and more/better demos will be added, as per the sessions indicated in the presentation overview:
+It may require a bit of extra work (i.e. learning another language), but this should be repaid in many ways, such as more choice of tools and better performance.
+
+As a bonus to data scientists, in section 8 there's a bit of a taster on how it is possible to do *real* data science in JavaScript: machine learning, neural networks. Not that you should - but in some instances, you can...
+
+_This is currently a work in progress: proper documentation and more/better demos will be added_
 
 <h3>0. Servers</h3>
 <h4 class="highlighted">What do they do?</h4>
@@ -23,6 +27,7 @@ Demos:
 - two-way communications between browser and server using websockets
 - demonstrating how the server can set cookies in the browser
 - how the server can run Python or R scripts
+
 Note: the demos are intended to run with the full, Express, server (index.js) - not all examples have code supporting them in the basic servers.
 
 
