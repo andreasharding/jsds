@@ -2,8 +2,11 @@ JavaScript in Data Science
 ==========================
 
 A set of demos and training presentations on using JavaScript from a data science perspective.
+
 It started as a rewrite of an R-Shiny project that had no analytical code: it was pure web development, but done without any of the resources or tooling normally available to web developers. That made it painful.
+
 It is intended to help data scientists, who often use only R and/or Python, to do things like create data visualisations directly in JavaScript. If the data science project is intended to be presented to the end user in a web browser, doing it in JavaScript is often better and easier than having to rely on indirect tools like Shiny (some simple use-cases excepted...).
+
 It may require a bit of extra work, but this should be repaid in many ways, such as more choice of tools and better performance.
 
 It is a work in progress: proper documentation and more/better demos will be added, as per the sessions indicated in the presentation overview:
@@ -11,14 +14,15 @@ It is a work in progress: proper documentation and more/better demos will be add
 <h3>0. Servers</h3>
 <h4 class="highlighted">What do they do?</h4>
 Naturally, the server runs in JavaScript - either using the Express framework, or as a basic no-dependency simple server.
+
 There is also a Python Flask server, in case you don't have node.js installed.
 
 Demos: 
-    - getting data from the server using AJAX
-    - sending data using POST
-    - two-way communications between browser and server using websockets
-    - demonstrating how the server can set cookies in the browser
-    - how the server can run Python or R scripts
+- getting data from the server using AJAX
+- sending data using POST
+- two-way communications between browser and server using websockets
+- demonstrating how the server can set cookies in the browser
+- how the server can run Python or R scripts
 Note: the demos are intended to run with the full, Express, server (index.js) - not all examples have code supporting them in the basic servers.
 
 
