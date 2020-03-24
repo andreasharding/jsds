@@ -28,7 +28,7 @@ Demos:
 - demonstrating how the server can set cookies in the browser
 - how the server can run Python or R scripts
 
-Note: the demos are intended to run with the full, Express, server (index.js) - not all examples have code supporting them in the basic servers.
+Note: the demos are intended to run with the full, Express, server (main_server.js) - not all examples have code supporting them in the basic servers.
 
 
 <h3>1. Get data</h3>
