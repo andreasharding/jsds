@@ -6,10 +6,14 @@
 </head>
 
 <body>
-
-<input type="text" id="search_query" value="coronavirus fake news" placeholder="Enter query here: e.g. cats OR dogs" width="90">
+<div>Enter some search terms, then click "Query endpoints now".<br />
+To make a pdf of the results, click "Save as pdf"<br /></div>
+<br />
+<div>
+<input type="text" id="search_query" size="48" value="coronavirus fake news" placeholder="Enter query here: e.g. cats OR dogs">
 <button id="go">Query endpoints now</button>
 <button id="mkpdf">Save as pdf</button>
+</div>
 
 </body>
 
@@ -21,19 +25,22 @@ const mkpdf_btn = document.querySelector('#mkpdf');
 let data_urls = [];
 let gathered_data;
 
+
+// GDELT query parameters (used in make_gdelt_query to make API call)
 let qry = { "search_terms": '("wildlife crime" OR poaching OR "illegal fishing" OR "wildlife trade")',
             "maxrecords": 10,
             "timespan": "1week",
             "format": "json"
             }
 
+
+// button handlers
 go_btn.addEventListener( 'click', function() {
 	let new_query = document.querySelector('#search_query').value;
 	console.log('new_query', new_query);
 	if (new_query != "") {
-        qry["search_terms"] = document.querySelector('#search_query').value; // "coronavirus AND UK";
+        qry["search_terms"] = document.querySelector('#search_query').value;
         data_urls.push(make_gdelt_query(qry));
-        // data_urls.push(make_buzzsumo_query(bs_query));
         console.log('start querying', qry, data_urls);
     
         collect_data();
@@ -42,10 +49,19 @@ go_btn.addEventListener( 'click', function() {
 
 mkpdf.addEventListener( 'click', function() {
     console.log('export_pdf');
-    // let data = [1, 2, 3];
     export_pdf(gathered_data);
 });
 
+
+
+
+
+
+
+
+/**
+as an added bonus, the data is made into a pdf for download
+*/
 
 function export_pdf(src) {
     var doc = new jsPDF();
@@ -80,6 +96,11 @@ function export_pdf(src) {
 // modified from https://www.shawntabrizi.com/code/programmatically-fetch-multiple-apis-parallel-using-async-await-javascript/
     
 
+
+/**
+This composes a GDELT API call based on the parameters passed in
+*/
+
 function make_gdelt_query(query) {
 	let q = encodeURIComponent(query.search_terms);
 	let m = '&mode=artlist';// artlist ToneChart ImageCollageShare TimelineVolRaw TimelineVolInfo  TimelineSourceCountry
@@ -90,33 +111,6 @@ function make_gdelt_query(query) {
 	let url = `https://api.gdeltproject.org/api/v2/doc/doc?query=${q}${x}${m}${t}${f}`;
 	
 	console.log('GDELT', url);
-	return url;
-}
-
-
-
-// insert your own API key here
-let api_key = '';
-
-
-let bs_query = {	"result_type":"published_date",
-                    "linked":"false",
-                    "num_days": 14,
-                    "page": 1,
-                    "api_key":api_key};
-
-
-function make_buzzsumo_query(query) {
-	let alert_id = 871861;//941691
-	let rt = 'result_type=' + query.result_type;
-	let l = '&linked=' + query.linked;
-	let n = '&num_days=' + query.num_days;
-	let p = '&page=' + query.page;
-	let ak = '&api_key=' + api_key;
-	
-    let url = `https://account-api.buzzsumo.com/alerts/mentions/${alert_id}?${rt}${l}${n}${p}${ak}`
-	
-	console.log('Buzzsumo', url);
 	return url;
 }
 

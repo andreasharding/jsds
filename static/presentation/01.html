@@ -88,28 +88,51 @@
 
 				
                 <section>
-                    <h2>JavaScript likes the web:</h2>
-                    <h3 class="highlighted">...it is inherently asynchronous</h3>
-                    <br/>
-                    <img class= "clean_img" src="./images/sync_v_async.png ">
-                    <p>
+                    <section>
+                        <h2>JavaScript likes the web:</h2>
+                        <h3 class="highlighted">...it is inherently asynchronous</h3>
+                        <br/>
+                        <img class= "clean_img" src="./images/sync_v_async.png ">
+                    </section>
                     
-                    <small><a href="https://insights.stackoverflow.com/survey/2019/#most-loved-dreaded-and-wanted">Language popularity</a></small>
-                    https://thenewstack.io/which-programming-languages-use-the-least-electricity/
-                    </p>
-
+                    <section>
+                        <h3 class="highlighted">What does being asynchronous mean?</h3>
+                        <br/>
+                        <p>When the code has to wait for something to happen,<br />it can do one of two things:</p>
+                        <ul>
+                            <li>do nothing - just sit there and wait</li>
+                            <li>do something else - receive a notification to resume</li>
+                        </ul>
+                        <p>Just sitting there and waiting is synchronous.<br />
+                        Doing something else and picking up where you left off later is asynchronous.</p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="highlighted">What does being asynchronous mean?</h3>
+                        <br/>
+                        <p>This only really applies to your code - the rest of the computer will carry on doing other things.</p>
+                        <p>It is easier to get understand synchronous code - it's just regular code that takes longer to run.</p>
+                        <p>Asynchronous code is a good thing when dealing with user interfaces, but the code isn't quite so simple (though there are features that try to make it look almost like synchronous code)</p>
+                    </section>
+                    
                 </section>
+
+
+
+
+
 
 				<section>
                     <section>
                         <h2>About asynchronous coding</h2>
-                        <h3 class="highlighted">callbacks, promises and ... waiting</h3>
+                        <h3 class="highlighted">Callbacks, promises and ... waiting</h3>
                         <ul>
                             <li>callbacks are functions supplied to other functions</li>
                             <li>promises are tidier</li>
                             <li><code>async</code> and <code>await</code> make code look synchronous</li>
                         </ul>
                         <br/>
+                        <p>What!!??</p>
                         <p>
                             <small><a href="https://medium.com/dev-bits/writing-neat-asynchronous-node-js-code-with-promises-32ed3a4fd098">Promises can be combined with async/await, as in this tutorial</a></small>
                         </p>
@@ -117,41 +140,269 @@
                     </section>
                     
 					<section>
-                        <h3 class="highlighted">callbacks</h3>
-						A callback function is a function that is passed to another function  as a parameter, and the callback function is called (or executed) inside the otherFunction. A callback function is essentially a pattern (an established solution to a common problem), and therefore, the use of a callback function is also known as a callback pattern.
-						
+                        <h3 class="highlighted">Callbacks</h3>
+						<p>A callback function is a function that is passed to another function as a parameter.</p>
+						<p>It is called (or executed) inside the other function when the asynchronous activity has finished.</p>
+					</section>
+				
+					<section>
+                        <h3 class="highlighted">Callbacks</h3>
+						<p>This pattern can also be applied to regular activities, which is useful for explaining how they work</p>
+						<p>Looping through an array using the <code>forEach</code> iterator takes a callback that is executed at each iteration.</p>
 						<pre><code class="js hljs">var friends = ["Mike", "Stacy", "Andy", "Rick"];
 
 friends.forEach(function (eachName, index){
-console.log(index + 1 + ". " + eachName); // 1. Mike, 2. Stacy, 3. Andy, 4. Rick
+    console.log(index + 1 + ". " + eachName);
+    // => 1. Mike, 2. Stacy, 3. Andy, 4. Rick
 });
 						</code></pre>
                         <small><a href="http://javascriptissexy.com/understand-javascript-callback-functions-and-use-them/">understand callbacks</a></small>
 					</section>
 				
+				
 					<section>
-						<h2></h2>
-						<h3></h3>
-						<h3></h3>
-							<ul>
-							</ul>
-						<br/>
-						<p>
-						
-                        <small><a href="https://thecodinginterface.com/blog/bridging-nodejs-and-python-with-pynode/">Connecting Python and Node.js</a></small>
-                        <small><a href="https://github.com/fridgerator/PyNode">PyNode</a></small>
-						</p>
-
+                        <h3 class="highlighted">Callbacks</h3>
+						<h3>The pyramid of doom, aka callback hell</h3>
+						<p>What about many sequential calls? You call another function within the first callback, and then another...</p>
+                        <pre><code class="js hljs">asyncFunction(function(){
+    asyncFunction(function(){
+        asyncFunction(function(){
+            asyncFunction(function(){
+                asyncFunction(function(){
+                    ....
+                });
+            });
+        });
+    });
+});
+                        </code></pre>
+                        <small>To avoid the pyramid of doom, you use promises or async/await functions.<br /><a href="https://www.javascripttutorial.net/javascript-callback/">more about callbacks</a></small>
 					</section>
-				
-
-				
-
 					</section>
 
 				
 				
+
+
 				
+                <section>
+                    <section>
+                        <h2>Promises</h2>
+                        <h3 class="highlighted"></h3>
+                        <br/>
+                        <p>A promise is an object that returns a value which you hope to receive in the future, but not now. That makes them useful in handling asynchronous calls.</p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="highlighted">Promises</h3>
+                        <br/>
+                        <p>The basic pattern is:</p>
+                        <pre><code class="js hljs">promisified_function
+    .then(success => console.log(success))
+    .then(another => console.log(another))
+    .catch(reason => console.log(reason))
+    .finally(() => do_something_else());
+                        </code></pre>
+                        </section>
+                    
+                    <section>
+                        <h3 class="highlighted">Promises</h3>
+                        <br/>
+                        <p>Note how the promise call is chained:</p>
+                        <ul>
+                            <li>call promise function</li>
+                            <li>then do something</li>
+                            <li>then do something else</li>
+                            <li>if an error occurs, output falls through to catch()</li>
+                            <li>finally do something to finish off the process, like close network connections</li>
+                        </ul>
+                        <p>The process at least looks sequential, <br />making it easier to read</p>
+                    </section>
+                    
+                </section>
+
+
+
+				
+                <section>
+                    <section>
+                        <h2>Promises</h2>
+                        <h3 class="highlighted"></h3>
+                        <br/>
+                        <p>A promise is an object that returns a value which you hope to receive in the future, but not now. That makes them useful in handling asynchronous calls.</p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="highlighted">Promises</h3>
+                        <br/>
+                        <p>The basic pattern is:</p>
+                        <pre><code class="js hljs">promisified_function
+    .then(success => console.log(success))
+    .then(another => console.log(another))
+    .catch(reason => console.log(reason))
+    .finally(() => do_something_else());
+                        </code></pre>
+                        </section>
+                    
+                    <section>
+                        <h3 class="highlighted">Promises</h3>
+                        <br/>
+                        <p>Note how the promise call is chained:</p>
+                        <ul>
+                            <li>call promise function</li>
+                            <li>then do something</li>
+                            <li>then do something else</li>
+                            <li>if an error occurs, output falls through to catch()</li>
+                            <li>finally do something to finish off the process, like close network connections</li>
+                        </ul>
+                        <p>The process at least looks sequential, <br />making it easier to read</p>
+                    </section>
+                    
+                </section>
+
+
+
+
+				
+                <section>
+                    <section>
+                        <h2>Async/await</h2>
+                        <h3 class="highlighted"></h3>
+                        <br/>
+                        <p>This is really just syntactic sugar to turn what look like regular functions into promises</p>
+                        <p>They look almost like regular functions, so your code looks very similar to synchronous code (even down to apparently halting execution flow whilst waiting)</p>
+                    </section>
+                    
+                    <section>
+                        <h3 class="highlighted">Async/await</h3>
+                        <br/>
+                        <p>The basic pattern is:</p>
+                        <pre><code class="js hljs">async function showAvatar() {
+    // read our JSON
+    let response = await fetch('/article/promise-chaining/user.json');
+    let user = await response.json();
+
+    // read github user
+    let githubResponse = await fetch(`https://api.github.com/users/${user.name}`);
+    let githubUser = await githubResponse.json();
+
+    // wait 3 seconds
+    await new Promise((resolve, reject) => setTimeout(resolve, 3000));
+
+    return githubUser;
+}
+
+showAvatar();
+                        </code></pre>
+                        </section>
+                                        
+                </section>
+
+
+
+
+
+
+
+
+
+
+				
+                <section>
+                    <section>
+                        <h2>Getting data</h2>
+                        <h3 class="highlighted">...Finally</h3>
+                        <p>Sorry for the wait, but you'll thank me for it later...</p>
+                        <p>There are two functions built in to browsers that get data (and also utilities that wrap these up nicely).</p>
+                        <p>Note: they aren't built into the language itself. This means if you aren't running in the browser, like in node.js, you need to use other techniques. <small>[NB I need to check this detail]</small></p>
+                    </section>
+
+
+                    <section>
+                        <h3 class="highlighted">Getting data 1: XMLHttpRequest</h3>
+                        <p>The horrible old way of doing it - there are nicer ways of doing it - this is for historical interest only.</p>
+                        <pre><code class="js hljs">var data = null;
+
+var xhr = new XMLHttpRequest();
+
+xhr.addEventListener("readystatechange", function () {
+    if (this.readyState === this.DONE) {
+        console.log(this.responseText);
+    }
+});
+
+xhr.open("GET", "https://google.com");
+
+xhr.send(data);
+                        </code></pre>
+                    </section>
+
+
+                    <section>
+                        <h3 class="highlighted">Getting data 2: Fetch</h3>
+                        <p><a href="https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">The modern way of doing it.</a></p>
+                        <pre><code class="js hljs">fetch("https://google.com")
+    .then((response) => {
+        return response.json();
+    })
+    .then((data) => {
+        console.log(data);
+    });
+                        </code></pre>
+                    </section>
+                
+                
+                
+                
+ 
+
+                    <section>
+                        <h3 class="highlighted">Getting data 3: Full-fat Fetch</h3>
+                        <p>With added promises and async/await (part 1)</p>
+                        <pre><code class="js hljs">// this allows multiple URLs to be fetched in parallel
+let gathered_data, data_urls = ["https://google.com", 
+                                "https://bing.com"];
+
+async function getAllUrls(urls) {
+    try {
+        var data = await Promise.all(
+            urls.map(url =>
+                    fetch(url).then(
+                        (response) => {return response.json();}
+                    )));
+        return (data);
+
+    } catch (error) {
+        console.log(error);
+        throw (error);
+    }
+};
+                        </code></pre>
+                    </section>
+               
+ 
+
+                    <section>
+                        <h3 class="highlighted">Getting data 3: Full-fat Fetch</h3>
+                        <p>With added promises and async/await (part 2)</p>
+                        <pre><code class="js hljs">// getAllUrls also needs to be wrapped in async/await 
+// otherwise it can miss slower fetches
+
+async function collect_data() {
+    var collected_data = await getAllUrls(data_urls);
+    gathered_data = JSON.parse(JSON.stringify(collected_data));
+    console.log('gathered_data');
+    console.log(gathered_data);
+}
+
+// finally need to invoke the async function
+collect_data();
+                        </code></pre>
+                        <p><a href="../get_data/query_endpoints.html">Taken from this example (look at source code too!)</a></p>
+                    </section>
+                </section>
+
+
 				
 				
 				

@@ -3,7 +3,7 @@ JavaScript in Data Science
 
 A set of demos and training presentations on using JavaScript from a data science perspective.
 
-It started as a rewrite of an R-Shiny project that had no analytical code: it was pure web development, but done without any of the resources or tooling normally available to web developers. That made it painful.
+This started as a rewrite of an R-Shiny project that had no analytical code: it was pure web development, but done without any of the resources or tooling normally available to web developers. That made it painful.
 
 It is intended to help data scientists, who often use only R and/or Python, to do things like create data visualisations directly in JavaScript. If the data science project is intended to be presented to the end user in a web browser, doing it in JavaScript is often better and easier than having to rely on indirect tools like Shiny (some simple use-cases excepted...).
 
@@ -13,7 +13,7 @@ It may require a bit of extra work (i.e. learning another language), but this sh
 
 As a bonus to data scientists, in section 8 there's a bit of a taster on how it is possible to do *real* data science in JavaScript: machine learning, neural networks. Not that you should - but in some instances, you can...
 
-_This is currently a work in progress: proper documentation and more/better demos will be added_
+_This is a work in progress, so documentation and demos are being added to keep up with the regular schedule_
 
 <h3>0. Servers</h3>
 <h4 class="highlighted">What do they do?</h4>
@@ -33,6 +33,7 @@ Note: the demos are intended to run with the full, Express, server (index.js) - 
 
 <h3>1. Get data</h3>
 <h4 class="highlighted">Introduction to async programming</h4>
+This has to cover some of the background first, so it takes a while to get to the basics. It may be a bit long/irrelevant - in which case it can be shortened...
 
 <h3>2. Wrangle data</h3>
 <h4 class="highlighted">The joys of JSON</h4>
@@ -59,7 +60,7 @@ Note: the demos are intended to run with the full, Express, server (index.js) - 
 <ul>
 <li>MDN: Learn web development <a href="https://developer.mozilla.org/en-US/docs/Learn">https://developer.mozilla.org/en-US/docs/Learn</a></li>
 <li>A general tutorial <a href="https://javascript.info/">https://javascript.info/</a></li>
-<li>A book on JavaScript, and also programming<a href="https://eloquentjavascript.net/">https://eloquentjavascript.net/</a></li>
+<li>A book on JavaScript, and also programming <a href="https://eloquentjavascript.net/">https://eloquentjavascript.net/</a></li>
 <li>Using JavaScript in data science <a href="http://js4ds.org/">http://js4ds.org/</a></li>
 <li>D3 book <a href="http://using-d3js.com/index.html">http://using-d3js.com/index.html</a></li>
 </ul>
