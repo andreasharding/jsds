@@ -314,7 +314,7 @@ showAvatar();
                         <h3 class="highlighted">...Finally</h3>
                         <p>Sorry for the wait, but you'll thank me for it later...</p>
                         <p>There are two functions built in to browsers that get data (and also utilities that wrap these up nicely).</p>
-                        <p>Note: they aren't built into the language itself. This means if you aren't running in the browser, like in node.js, you need to use other techniques. <small>[NB I need to check this detail]</small></p>
+                        <p>Note: they aren't built into the language itself. This means if you aren't running in the browser, like in node.js, you need to use other techniques.</p>
                     </section>
 
 
@@ -390,8 +390,8 @@ async function getAllUrls(urls) {
 
 async function collect_data() {
     var collected_data = await getAllUrls(data_urls);
+    // this is a trick to clone the data (sometimes useful)
     gathered_data = JSON.parse(JSON.stringify(collected_data));
-    console.log('gathered_data');
     console.log(gathered_data);
 }
 
@@ -401,6 +401,135 @@ collect_data();
                         <p><a href="../get_data/query_endpoints.html">Taken from this example (look at source code too!)</a></p>
                     </section>
                 </section>
+
+
+
+
+
+
+
+
+				
+                <section>
+                    <section>
+                        <h2>Using common libraries</h2>
+                        <h3 class="highlighted">Why not use it if it's already there?</h3>
+                        <p>Many libraries that you might already be using have data-getting utility functions, e.g.</p>
+                        <ul>
+                            <li>jQuery: $.ajax({})</li>
+                            <li>d3: d3.csv(input[, init][, row]) </li>
+                            <li>axios: axios.get(url[, config])</li>
+                            <li>PapaParse: Papa.parse(url[, options])</li>
+                        </ul>
+                    </section>
+
+
+                    <section>
+                        <h3 class="highlighted">jQuery</h3>
+                        <p>jQuery is a long established utility for interacting with DOM elements, for example getting data when a button is clicked and putting the results into the page</p>
+                        <pre><code class="js hljs">$("button").click(function(){
+  $.ajax({url: "demo_test.txt", success: function(result){
+    $("#div1").html(result);
+  }});
+});
+                        </code></pre>
+<a href="https://api.jquery.com/jQuery.ajax/">https://api.jquery.com/jQuery.ajax/</a>
+                    </section>
+
+
+                    <section>
+                        <h3 class="highlighted">d3 - data-driven documents</h3>
+                        <p>d3 is often assumed to be <em>just</em> a drawing package, but it offers much more, including utilities for data getting and wrangling</p>
+                        <pre><code class="js hljs">d3.csv("/data/employees.csv", function(data) {
+    for (var i = 0; i < data.length; i++) {
+        console.log(data[i].Name);
+        console.log(data[i].Age);
+    }
+});
+                        </code></pre>
+<a href="https://github.com/d3/d3/blob/master/API.md#fetches-d3-fetch">https://github.com/d3/d3/blob/master/API.md#fetches-d3-fetch</a>
+                    </section>
+
+
+                    <section>
+                        <h3 class="highlighted">axios</h3>
+                        <p>axios is a promise-based HTTP client for the browser and node.js - so it's specialised for getting data</p>
+                        <pre><code class="js hljs">//Performing multiple concurrent requests
+
+function getUserAccount() {
+  return axios.get('/user/12345');
+}
+
+function getUserPermissions() {
+  return axios.get('/user/12345/permissions');
+}
+
+axios.all([getUserAccount(), getUserPermissions()])
+  .then(axios.spread(function (acct, perms) {
+    // Both requests are now complete
+  }));
+                        </code></pre>
+<a href="https://github.com/axios/axios">https://github.com/axios/axios</a>
+                    </section>
+
+
+                    <section>
+                        <h3 class="highlighted">PapaParse</h3>
+                        <p>PapaParse is designed for handling csv data, but will also get remote documents. It's good at dealing with csv files that are very large or oddly formatted.</p>
+                        <pre><code class="js hljs">Papa.parse("http://example.com/file.csv", {
+	download: true,
+	complete: function(results) {
+		console.log(results);
+	}
+});
+                        </code></pre>
+<a href="https://www.papaparse.com/#remote-files">https://www.papaparse.com/#remote-files</a>
+                    </section>
+
+                </section>
+
+
+
+
+
+
+
+
+				
+                <section>
+                    <h2>What about node.js?</h2>
+                    <h3 class="highlighted">Not a problem</h3>
+                    <p>You can use utilities like axios, PapaParse or d3 there too, or some that are node specific:</p>
+                    <ul>
+                        <li>request: very common, but now deprecated</li>
+                        <li>node-fetch: one possible replacement</li>
+                    </ul>
+                </section>
+
+
+
+
+
+
+
+
+				
+                <section>
+                    <h2>What about webscraping?</h2>
+                    <h3 class="highlighted">or, what to do when the data is HTML</h3>
+                    <p>You have to navigate through the page structure. 
+                    jQuery or Beautiful Soup (in Python) help you do this once you have acquired the page.</p>
+                    <p>Although it's out of scope here, a couple of tips:</p>
+                    <ul>
+                        <li>tip 1: check there isn't already an API</li>
+                        <li>tip 2: look for JSON data inside <a href="https://css-tricks.com/a-complete-guide-to-data-attributes/">data-* attributes</a> in the page </li>
+                    </ul>
+                </section>
+
+
+
+
+
 
 
 				

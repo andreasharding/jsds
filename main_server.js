@@ -16,8 +16,8 @@ let {PythonShell} = require('python-shell')
 cn = {
 	host: 'localhost', // 'localhost' is the default;
 	port: 5432, // 5432 is the default;
-	database: 'andreas',
-	user: 'andreas',
+	database: 'andreasharding',
+	user: 'andreasharding',
 	password: ''
 };
 
@@ -399,6 +399,18 @@ app.get('/ajax/', (req, res) => {
                         ORDER BY sample_mark, provinceEnglishName, cityEnglishName \
                         ; \
                         ";
+            break;
+            
+            
+            case 'maplines':
+                let cat_id;
+                if (typeof(req.query['cat']) != 'undefined') {
+                    cat_id = req.query['cat'];
+                } else {
+                    cat_id = 'ship_location';
+                }
+                
+                sql = `SELECT * FROM __map_lines WHERE category = '${cat_id}' ORDER BY item_name desc, time_stamp;`;
             break;
             
             

@@ -1,28 +1,22 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE html>
 
 <html>
 <head> 
 	<meta charset="utf-8" />
 	<title>globo</title>
-<!-- 
-	<script src="libs/jquery/jquery-3.4.1.min.js"></script>
-	<script src="libs/lodash.js"></script>
-	<script src="libs/d3/d3.min.js" charset="utf-8"></script>
-	<script src="libs/d3/d3-array.v1.min.js"></script>
-	<script src="libs/d3/d3-geo.v1.min.js"></script>
-	<script src="libs/d3/d3-geo-projection.v2.min.js"></script>
- -->
 	<script src="../libs/d3.v4.min.js" charset="utf-8"></script>
 	<script src="../libs/topojson.js"></script>
 	<script src='../libs/turf.min.js'></script>
 	<script src='../libs/moment.js'></script>
+	<script src='../libs/papaparse.min.js'></script>
+	<script src='../libs/FileSaver.min.js'></script>
+    <script src="../libs/jspdf.min.js"></script>
 
 	<style>
-	div.tooltip {
+	div.tooltip, div.dbltooltip {
 		position: absolute;
 		text-align: left;
-		width: 120px;
-		height: 14px;
+		width: 140px;
 		padding: 2px;
 		font: 12px sans-serif;
 		background: lightsteelblue;
@@ -30,12 +24,21 @@
 		border-radius: 8px;
 		pointer-events: none;
 	}
+    div.tooltip {
+		height: 14px;
+    }
+	div.dbltooltip {
+		height: 28px;
+    }
 	.graticule {
 		fill: none;
 		stroke: #00f;
 		stroke-opacity: .35;
 		stroke-width: .5px;
 	}
+    #file_input {
+        display: inline-block;
+    }
 	</style>
 
 </head>
@@ -45,10 +48,490 @@
 
 <body>
 
+<div id="control_buttons">
+    <input type="file" id="file_input" name="file" onchange="readFile(this)">
+    <button id="get_from_db">Read from DB</button>
+    <button id="mkpdf">Save as svg</button>
+
+    <br />
+</div>
+
+
 <div id="map" style="width: 100%; height: 100%;"></div>
 
 
 <script>
+// import location file
+// id,ref,name,timestamp,lat,long,location_name,colour,desc
+
+/*
+https://www.d3indepth.com/geographic/
+*/
+
+let neongrey = {
+    dot: '#FF750C',
+    line: '#2EA1ED',
+    city: '#D3E128',
+    country: '#9B9DA9',
+    sea: '#4B4A58',
+    graticule: '#5F9E00',
+    graticule_opacity: 0.34,
+    line_opacity: 0.7
+}
+
+let plain = {
+    dot: '#A89487',
+    line: '#A89487',
+    city: '#4332ff',
+    country: '#9B9DA9',
+    sea: '#4B4A58',
+    graticule: '#5F9E00',
+    graticule_opacity: 0.34,
+    line_opacity: 0.7
+}
+
+
+
+
+async function getAllUrls(urls) {
+    try {
+        var data = await Promise.all(
+            urls.map(url =>
+                    fetch(url).then(
+                        (response) => {return response.json();}
+                    )));
+        return (data);
+
+    } catch (error) {
+        console.log(error);
+        throw (error);
+    }
+};
+
+// getAllUrls also needs to be wrapped in async/await otherwise it can miss slower fetches
+async function collect_data() {
+    var collected_data = await getAllUrls(data_urls);
+    gathered_data = JSON.parse(JSON.stringify(collected_data));
+    console.log('gathered_data');
+    console.log(gathered_data);
+    draw_map_lines(gathered_data, true, true, 'json')
+}
+
+
+
+
+
+
+
+
+let data_urls = [];
+
+const mkpdf_btn = document.querySelector('#mkpdf');
+const get_from_db_btn = document.querySelector('#get_from_db');
+
+// button handlers
+
+mkpdf.addEventListener( 'click', function() {
+    console.log('Export SVG');
+    export_pdf('map_svg');
+});
+
+get_from_db_btn.addEventListener( 'click', function() {
+    console.log('get from database');
+    data_urls.push("/ajax?q=maplines&cat=ship_location");
+    collect_data();
+});
+
+
+
+
+
+
+
+
+/**
+Made into a svg for download:
+1. Extract the data as SVG text string
+2. Save this as a blob (binary large object)
+*/
+
+function export_pdf(src) {
+    let svg_element = document.getElementById(src);
+    
+    // 
+    let svg_xml = (new XMLSerializer).serializeToString(svg_element);    
+    saveAs(new Blob([svg_xml], {type: "application/xhtml+xml;charset=" + document.characterSet}), "document.svg");    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+let user_overlay;
+
+
+function draw_map_lines(raw_data, use_circles = true, connect_dots = true, input_format='csv') {
+    let parsed_data;
+    // console.log(raw_data);
+    
+    if (input_format == 'csv') {
+        parsed_data = Papa.parse(raw_data, {delimiter: ",", header: true, dynamicTyping: true});
+        // console.log(parsed_data);
+    } else {
+        parsed_data = {data: raw_data[0], errors: [], meta: {}};// NB has to be item [0]!!
+    }
+    // console.log(JSON.parse(JSON.stringify(parsed_data)));
+    // console.log(JSON.stringify(parsed_data));
+    
+    
+    // draw any line segments first, so dots can sit on top of them
+    
+    let lines_to_connect = [];
+    let dot_coordinates = [];
+    let dot_paths = [];
+    
+    if (connect_dots) {
+        // NB assume list in parsed_data.data is already sorted - if risk it isn't, need to pre-sort it
+
+        let previous_pt = [parsed_data.data[0].long, parsed_data.data[0].lat];
+        let line_segment = [previous_pt];
+
+        // this iterates over parsed_data stating at the second element
+        // line_segment is like a conveyor belt. it always contains two points, 
+        // but only records it if the end point is allowed to connect
+        
+        
+        // also collect points for dot_coordinates
+        // dot_coordinates.push([parsed_data.data[0].long, parsed_data.data[0].lat]); // add current point
+        
+        
+
+            
+        let imported_dots_feature_collection = {"type": "FeatureCollection",
+               "features": []
+           };
+        
+        let proto_dot_feature = {
+                "type":"Feature",
+                 "properties":{"name_en":""},
+                 "geometry":{"type":"Point","coordinates":[0,0]}}
+        
+        let clone_thing = function(thing) {
+            return JSON.parse(JSON.stringify(thing));
+        }
+        
+        if (parsed_data.data.length > 1) {
+            console.log('parsed_data.data.length > 1');
+            for (let i = 1; i < parsed_data.data.length; i++) {
+                line_segment.push([parsed_data.data[i].long, parsed_data.data[i].lat]); // add current point
+                // dot_coordinates.push([parsed_data.data[i].long, parsed_data.data[i].lat]); // add current point
+                // console.log(line_segment);
+                // only if it's supposed to connect do you actually collect this line
+                if (parsed_data.data[i].connect_to_previous == 1) {
+                    // NB clone it - shallow copy will get altered leaving only the last single point to add!
+                    lines_to_connect.push(clone_thing(line_segment));
+                }
+                line_segment.shift();// just leave the recently added point as first point for next iteration
+            }
+            
+            
+            
+            // separate out the dots whilst experimenting...
+            let d,f;
+            for (let i = 0; i < parsed_data.data.length; i++) {
+                d = parsed_data.data[i];
+                // console.log(JSON.stringify(d));
+                
+                dot_coordinates.push([d.long, d.lat]);
+                dot_paths.push( d3.geoCircle().center([d.long, d.lat]).radius(city_dot_radius * d.size)() );
+                
+                f = clone_thing(proto_dot_feature);
+                f.geometry.coordinates = [d.long, d.lat];
+                f.properties.name_en = d.item_name + '<br /> ' + moment(d.time_stamp).format('hh:mm DD/MM/YYYY');
+                f.properties.size = d.size;
+                f.properties.colour = d.colour;
+                // f.properties.name_en = d.item_name + ': ' + d.location_name;
+                imported_dots_feature_collection.features.push(f);
+                // dot_paths.push( path( d3.geoCircle().center([d.long, d.lat]).radius(city_dot_radius * d.size)() ) );
+                
+            }
+            
+        }
+
+
+
+            
+        let features_collection_dot_paths = {"type": "FeatureCollection",
+               "features": [
+                  {"type": "Feature",
+                  "geometry": {
+                         "type": "MultiPolygon",
+                         "coordinates": dot_paths
+                     },
+                  "properties": {
+                    "name": "multi_points"
+                  }
+              }
+               ]
+           };
+        
+
+        // this is in use
+        let features_collection_dots = {"type": "FeatureCollection",
+               "features": [
+                  {"type": "Feature",
+                  "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": dot_coordinates
+                  },
+                  "properties": {
+                    "name": "multi_points"
+                  }
+              }
+               ]
+           };
+        
+                
+        
+        // this is in use
+        let features_collection_lines = {"type": "FeatureCollection",
+               "features": [{"type": "Feature",
+                   "geometry": {
+                       "type": "MultiLineString",
+                       "coordinates": lines_to_connect
+                   },
+                   "properties": {}
+               }
+               ]
+           };
+        
+        
+        
+        
+        map.append("path")
+            .datum(features_collection_lines)
+            .attr("d", path)
+            .attr("id", "connected_lines")
+            .attr("stroke", neongrey.line)
+            .attr('stroke-width', 2)
+            .attr("fill", "none")
+            ;
+        
+        
+        // THIS WORKS, BUT ALL DOTS UNIFORM SIZE/COLOUR etc.
+        let show_uniform_dots = false
+        
+        if (show_uniform_dots) {
+        
+            map.append("path")
+                .datum(features_collection_dots)
+                .attr("d", path)
+                .attr("id", "connected_dots")
+                .attr("fill", neongrey.dot)
+                .attr("stroke", "none")
+                ;
+                
+        } else {
+            // NB varying the dot size based on the d.properties.size requires 
+            // fiddling around in the zoom function too, so don't bother with it
+             map.append("g")
+                .attr("class", "imported_dots" )
+                .selectAll("path")
+                .data(imported_dots_feature_collection.features)
+                .enter().append("path")
+                .attr("d", (d) => {return path( d3.geoCircle().center(d.geometry.coordinates).radius(city_dot_radius)() )})
+                .attr("fill", (d) => {return d.properties.colour;})
+                .on("mouseover", function(d) {
+                    dbldiv.transition()
+                        .duration(100)
+                        .style("opacity", .9);
+                    dbldiv	.html(d.properties.name_en)
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                .on("mouseout", function(d) {
+                    dbldiv.transition()
+                        .duration(200)
+                        .style("opacity", 0);
+                })
+       
+        
+        
+        
+        }
+    
+    }
+    
+    
+    
+    
+    
+    /*
+    let user_geojson = {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": []
+      },
+      "properties": {
+        "name": "-x-"
+      }
+    }
+    
+    for (let i = 0; i < parsed_data.data.length; i++) {
+        user_geojson.geometry.coordinates.push([parsed_data.data[i].long, parsed_data.data[i].lat]);
+    }
+    
+    
+    
+    
+    
+    
+    TRY:
+    generate path with path( d3.geoCircle().center([d.long, d.lat]).radius(city_dot_radius * 9)() )}
+    and put this into geojson as if it were a real thing there. Then can attach proper path using:
+    .attr("d", path)
+    
+    
+    
+    
+    
+    */
+    
+    // NB these probably need to be put into a geojson structure as the MultiLineString above
+    // so that zoom and pan works with it
+    
+    
+    if (add_separate_circles) {
+        if (use_circles) {
+            user_overlay = map.append("g")
+                .attr("class", "ne_50m_populated_places" )
+                .selectAll("circle")
+                .data(parsed_data.data)
+                .enter().append("circle")
+                .attr("cx", (d) => {/*console.log(d);*/ return projection([d.long, d.lat])[0];})
+                .attr("cy", (d) => {return projection([d.long, d.lat])[1];})
+                .attr("r", (d) => {return d.size * 0.5;})
+                .attr("fill", (d) => {return d.colour;})
+                .style("opacity",0.8)
+                .on("mouseover", function(d) {
+                    div.transition()
+                        .duration(100)
+                        .style("opacity", .9);
+                    div	.html(d.item_name + " >>> " + d.time_stamp)
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                .on("mouseout", function(d) {
+                    div.transition()
+                        .duration(200)
+                        .style("opacity", 0);
+                })
+        } else {
+            user_overlay = map.append("g")
+                .attr("class", "ne_50m_populated_places" )
+                .selectAll("path")
+                .data(parsed_data.data)//  user_geojson.geometry.coordinates
+                .enter().append("path")
+                .attr("d", (d) => {/*console.log(d);*/ return path( d3.geoCircle().center([d.long, d.lat]).radius(city_dot_radius * d.size)() )})
+                .attr("name", (d) => {return d.location_name;})
+                .attr("fill", (d) => {return d.colour;})
+                .on("mouseover", function(d) {
+                    div.transition()
+                        .duration(100)
+                        .style("opacity", .9);
+                    div	.html(d.item_name + " >>> " + d.time_stamp)
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                    })
+                .on("mouseout", function(d) {
+                    div.transition()
+                        .duration(200)
+                        .style("opacity", 0);
+                })
+        }   
+    }
+
+//     svg.call(d3.drag().on('drag', drag_f))
+//     .call(d3.zoom().on('zoom', zoom_f));
+//     map = svg.selectAll("g");
+
+    // console.log('svg.selectAll("path")', svg.selectAll("path"));
+
+    
+}
+
+
+
+
+function readFile(input) {
+  let file = input.files[0];
+
+  let reader = new FileReader();
+
+  reader.readAsText(file);
+
+  reader.onload = function() {
+    draw_map_lines(reader.result, true);
+  };
+
+  reader.onerror = function() {
+    console.log(reader.error);
+  };
+
+}
+
+
+
+
+
+
+// creating download feature for the svg
+// largely based on https://gist.github.com/jweir/706988
+// see http://stackoverflow.com/questions/2483919/how-to-save-svg-canvas-to-local-filesystem
+
+	
+function download_svg(download) {
+    console.log('download_svg');
+    // Get the d3js SVG element
+    let svg_element = document.getElementById("map");
+    // Extract the data as SVG text string
+    let svg_xml = (new XMLSerializer).serializeToString(svg_element);
+    
+//     let b64 = window.btoa(unescape(encodeURIComponent( svg_xml )));
+//     // var download = $("#" + button_id);
+//     let html = download.html();
+
+
+    console.log(svg_xml);
+
+//     var blob = new Blob(["Hello, world!"], {type: "text/plain;charset=utf-8"});
+//     
+//     FileSaver.saveAs(blob, "hello world.txt");
+    // console.log("---------- encode_as_link -------------");
+//     download.replaceWith(
+//         $("<a id='"+button_id+"' href-lang='image/svg+xml' href='data:image/svg+xml;base64,\n"+b64+"'></a>").html(html));
+    return false;
+    
+}
+
+
+
+
+
+
+
+
+
+
 
 // d3 = require("https://d3js.org/d3.v4.min.js")
 
@@ -56,20 +539,54 @@
 let div = d3.select("body").append("div")
 	.attr("class", "tooltip")
 	.style("opacity", 0);
+	
+let dbldiv = d3.select("body").append("div")
+	.attr("class", "dbltooltip")
+	.style("opacity", 0);
 
 let width = d3.select("#map").node().getBoundingClientRect().width;
 let height = 800, k_val;
 const sensitivity = 75;
 const city_dot_radius = 0.1;
 
+let show_china = false;
+let show_graticule = true;
+let show_cities = true;
+let show_globe_bg = true;
+let allow_drag_and_zoom = true;
+let get_ncv_data = false;
+let add_separate_circles = false; // probably temporary
 
+let projection;
+let projection_type = 'satellite';
+
+
+
+
+// geoEqualEarth
 // geoAzimuthalEqualArea
-// let projection = d3.geoEquirectangular()
-let projection = d3.geoOrthographic()
-	.scale(250)
-	.center([0, 0])
-	.rotate([0,-30])
-	.translate([width / 2, height / 2]);
+// geoEquirectangular
+// geoOrthographic
+// geoMercator
+
+// for 'flat' projections
+if (projection_type == 'flat') {
+    projection = d3.geoEquirectangular()
+        .scale(270)
+        .center([0, 0])
+        .rotate([-12.5,0])
+        .translate([width / 2, height / 2]);
+    show_globe_bg = false;
+} else {
+    // for satellite projections
+    projection = d3.geoOrthographic()
+        .scale(250)
+        .center([0, 0])
+        .rotate([0,-30])
+        .translate([width / 2, height / 2]);
+    show_globe_bg = true;
+}
+
 
 
 const initialScale = projection.scale();
@@ -77,18 +594,21 @@ let path = d3.geoPath().projection(projection);
 
 let svg = d3.select("#map")
 	.append("svg")
+	.attr("id", "map_svg")
 	.attr("width", width)
 	.attr("height", height);
 
-let globe = svg.append("circle")
-	.attr("fill", "#EEE")
-	.attr("stroke", "#000")
-	.attr("stroke-width", "0.2")
-	.attr("cx", width/2)
-	.attr("cy", height/2)
-	.attr("r", initialScale);
+// if (show_globe_bg) {
+    let globe = svg.append("circle")
+        .attr("fill", neongrey.sea)
+        .attr("stroke", "none")
+        .attr("stroke-width", "0.2")
+        .attr("cx", width/2)
+        .attr("cy", height/2)
+        .attr("r", initialScale);
+// }
 
-svg.call(d3.drag().on('drag', () => {
+let drag_f = () => {
 	const rotate = projection.rotate();
 	const k = sensitivity / projection.scale();
 	projection.rotate([
@@ -97,17 +617,19 @@ svg.call(d3.drag().on('drag', () => {
 	])
 	path = d3.geoPath().projection(projection);
 	path.pointRadius([0.5 * projection.scale() / initialScale]);//  * city_dot_radius
-	// console.log('drag projection.scale()', projection.scale());
-	// console.log('drag k_val', k_val);
+    // console.log('drag projection.scale()', projection.scale());
+    // console.log('drag k_val', k_val);
+    // console.log('svg.selectAll("path")', svg.selectAll("path"));
+	
 	svg.selectAll("path").attr("d", path);
+	// map.selectAll("path").attr("d", path);
+    // user_overlay.selectAll("path").attr("d", path);
 
-//	 svg.selectAll(".ne_50m_populated_places")
-//		 .selectAll("circle")
-//			 .attr("cx", (d) => {return projection(d.geometry.coordinates)[0];})
-//			 .attr("cy", (d) => {return projection(d.geometry.coordinates)[1];});
 
-}))
-.call(d3.zoom().on('zoom', () => {
+}
+
+
+let zoom_f = () => {
 	if(d3.event.transform.k > 0.3) {
 		projection.scale(initialScale * d3.event.transform.k);
 		path = d3.geoPath().projection(projection);
@@ -115,20 +637,26 @@ svg.call(d3.drag().on('drag', () => {
 		// this sort of works to scale points  / 0.2 *  initialScale
 		path.pointRadius([0.5 * d3.event.transform.k]);//  * city_dot_radius
 		svg.selectAll("path").attr("d", path);
-		globe.attr("r", projection.scale());
+		// user_overlay.selectAll("path").attr("d", path);
+		if (show_globe_bg) {globe.attr("r", projection.scale());}
 		k_val = d3.event.transform.k;
-
-//		 svg.selectAll(".ne_50m_populated_places")
-//			 .selectAll("circle")
-//				 .attr("cx", (d) => {return projection(d.geometry.coordinates)[0];})
-//				 .attr("cy", (d) => {return projection(d.geometry.coordinates)[1];});
 	}
 	else {
 		d3.event.transform.k = 0.3
 	}
-}))
+}
 
-let map = svg.append("g")
+
+
+
+if (allow_drag_and_zoom) {
+    svg.call(d3.drag().on('drag', drag_f))
+        .call(d3.zoom().on('zoom', zoom_f));
+}
+
+
+
+let map = svg.append("g");
 
 const map_url = './data/world_c.topojson';
 // const map_url = './data/';
@@ -146,7 +674,7 @@ world_c.topojson
 */
 
 d3.json(map_url, function(err, d) {
-console.log(d);
+// console.log(d);
 
 map.append("g")
 	.attr("class", "countries" )
@@ -156,7 +684,7 @@ map.append("g")
 	.enter().append("path")
 	.attr("class", d => "country_" + d.properties.Country.replace(" ","_"))
 	.attr("d", path)
-	.attr("fill", "white")
+	.attr("fill", neongrey.country)
 	.style('stroke', 'black')
 	.style('stroke-width', 0.3)
 	.style("opacity",0.8)
@@ -175,31 +703,32 @@ map.append("g")
 	})
 
 // special map of China's provinces
-map.append("g")
-	.attr("class", "china" )
-	.selectAll("path")
-	.data(topojson.feature(d, d.objects.China_Province).features) // for topojson
-	.enter().append("path")
-	.attr("class", d => "province" + d.properties.NAME_PINGY.replace(" ","_"))
-	.attr("d", path)
-	.attr("fill", "#ffecea")
-	.style('stroke', 'black')
-	.style('stroke-width', 0.3)
-	.style("opacity",0.8)
-	.on("mouseover", function(d) {
-		div.transition()
-			.duration(100)
-			.style("opacity", .9);
-		div	.html("<i>" + d.properties.NAME_PINGY + "</i>")
-			.style("left", (d3.event.pageX) + "px")
-			.style("top", (d3.event.pageY - 28) + "px");
-		})
-	.on("mouseout", function(d) {
-		div.transition()
-			.duration(200)
-			.style("opacity", 0);
-	})
-
+if (show_china) {
+    map.append("g")
+        .attr("class", "china" )
+        .selectAll("path")
+        .data(topojson.feature(d, d.objects.China_Province).features) // for topojson
+        .enter().append("path")
+        .attr("class", d => "province" + d.properties.NAME_PINGY.replace(" ","_"))
+        .attr("d", path)
+        .attr("fill", "#ffecea")
+        .style('stroke', 'black')
+        .style('stroke-width', 0.3)
+        .style("opacity",0.8)
+        .on("mouseover", function(d) {
+            div.transition()
+                .duration(100)
+                .style("opacity", .9);
+            div	.html("<i>" + d.properties.NAME_PINGY + "</i>")
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+            })
+        .on("mouseout", function(d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", 0);
+        })
+}
 
 // populated places as dots
 /*
@@ -247,7 +776,6 @@ console.log(zcircles());
 */
 
 
-let show_graticule = true;
 let graticule = d3.geoGraticule10();
 // let graticule = d3.geoGraticule()
 //	 .step([graticule_x, graticule_y]);
@@ -260,47 +788,60 @@ if (show_graticule) {
 		.datum(graticule)
 		.attr("class", "graticule")
 		.attr("fill", "none")
-		.attr("stroke", "#00f")
-		.attr("stroke-opacity", "0.35")
+		.attr("stroke", neongrey.graticule)
+		.attr("stroke-opacity", neongrey.graticule_opacity)
 		.attr("d", path);
 }
 
 
+if (show_cities) {
+    let filtered_places = {geometries: [], type: "GeometryCollection"};
+    // let special_country_codes = ['CH'];//CH = Switzerland, CN = China
+    let special_country_codes = [];
 
-let filtered_places = {geometries: [], type: "GeometryCollection"};
-let special_country_codes = ['CN'];
+    for (let i = 0; i < d.objects.ne_50m_populated_places.geometries.length; i++) {
+        if (d.objects.ne_50m_populated_places.geometries[i].properties.ISO_A2 != special_country_codes[0]) {
+            filtered_places.geometries.push(d.objects.ne_50m_populated_places.geometries[i]);
+        }
+    }
 
-for (let i = 0; i < d.objects.ne_50m_populated_places.geometries.length; i++) {
-	if (d.objects.ne_50m_populated_places.geometries[i].properties.ISO_A2 != special_country_codes[0]) {
-		filtered_places.geometries.push(d.objects.ne_50m_populated_places.geometries[i]);
-	}
+
+    // console.log(filtered_places);
+    // console.log(topojson.feature(d, filtered_places));
+    // console.log('topojson.feature filtered_places');
+    // console.log(JSON.stringify(topojson.feature(d, filtered_places)));
+    // console.log('topojson.feature filtered_places', topojson.feature(d, filtered_places));
+
+    map.append("g")
+        .attr("class", "ne_50m_populated_places" )
+        .selectAll("path")
+    //	 .data(topojson.feature(d, d.objects.ne_50m_populated_places).features)
+        .data(topojson.feature(d, filtered_places).features)
+        .enter().append("path")
+        .attr("d", (d) => {/*console.log(d.properties.name_en + ' = ' + d.geometry.coordinates);*/ return path( d3.geoCircle().center(d.geometry.coordinates).radius(city_dot_radius)() )})
+        .attr("fill", neongrey.city)
+        .on("mouseover", function(d) {
+            div.transition()
+                .duration(100)
+                .style("opacity", .9);
+            div	.html(d.properties.name_en)
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+            })
+        .on("mouseout", function(d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", 0);
+        })
+
 }
 
 
-// console.log(filtered_places);
-// console.log(topojson.feature(d, filtered_places));
 
-map.append("g")
-	.attr("class", "ne_50m_populated_places" )
-	.selectAll("path")
-//	 .data(topojson.feature(d, d.objects.ne_50m_populated_places).features)
-	.data(topojson.feature(d, filtered_places).features)
-	.enter().append("path")
-	.attr("d", (d) => {return path( d3.geoCircle().center(d.geometry.coordinates).radius(city_dot_radius)() )})
-	.attr("fill", "#4332ff")
-	.on("mouseover", function(d) {
-		div.transition()
-			.duration(100)
-			.style("opacity", .9);
-		div	.html(d.properties.name_en)
-			.style("left", (d3.event.pageX) + "px")
-			.style("top", (d3.event.pageY - 28) + "px");
-		})
-	.on("mouseout", function(d) {
-		div.transition()
-			.duration(200)
-			.style("opacity", 0);
-	})
+
+
+
+
 
 
 
@@ -377,24 +918,26 @@ function collect_by_time(flat_data) {
 	return time_data;
 }
 
+if (get_ncv_data) {
+    let root_url = location.protocol + '//' + location.hostname + (location.port ? ':'+location.port: '') + '/';
+    console.log('fetch root_url', root_url);
 
-let root_url = location.protocol + '//' + location.hostname + (location.port ? ':'+location.port: '') + '/';
-console.log('fetch root_url', root_url);
+    // http://localhost:3000/ajax?q=ncv&city=Wuhan&date=2020-02-02
 
-// http://localhost:3000/ajax?q=ncv&city=Wuhan&date=2020-02-02
-
-fetch(root_url + "ajax?q=ncv&city=Wuhan&date=2020-02-02")
-	.then(response_t => response_t.json())
-	.then(function(ncv) {
-		clean_ncv_data(ncv)
-		console.log('ncv', ncv);
-		let ncv_time_marked = collect_by_time(ncv);
-		console.log('ncv_time_marked', ncv_time_marked);
-	})
-	.catch(function(error) {
-		// If there is any error you will catch them here
-		console.log('Something went wrong', error);
-	}); 
+    fetch(root_url + "ajax?q=ncv&city=Wuhan&date=2020-02-02")
+        .then(response_t => response_t.json())
+        .then(function(ncv) {
+            clean_ncv_data(ncv);
+            console.log('ncv', ncv);
+            let ncv_time_marked = collect_by_time(ncv);
+            console.log('ncv_time_marked', ncv_time_marked);
+        })
+        .catch(function(error) {
+            // If there is any error you will catch them here
+            console.log('Something went wrong', error);
+        }); 
+    
+}
 
 /**/
 
