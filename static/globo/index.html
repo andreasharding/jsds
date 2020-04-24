@@ -255,7 +255,7 @@ function draw_map_lines(raw_data, use_circles = true, connect_dots = true, input
                 
                 f = clone_thing(proto_dot_feature);
                 f.geometry.coordinates = [d.long, d.lat];
-                f.properties.name_en = d.item_name + '<br /> ' + moment(d.time_stamp).format('hh:mm DD/MM/YYYY');
+                f.properties.name_en = d.item_name + '<br /> ' + moment(d.time_stamp).format('HH:mm DD/MM/YYYY');
                 f.properties.size = d.size;
                 f.properties.colour = d.colour;
                 // f.properties.name_en = d.item_name + ': ' + d.location_name;

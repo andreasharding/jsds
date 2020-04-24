@@ -37,9 +37,11 @@ This has to cover some of the background first, so it takes a while to get to th
 
 <h3>2. Wrangle data</h3>
 <h4 class="highlighted">The joys of JSON</h4>
+Working with JSON natively can be hard work at times, just because you can end up looping through it so often, which can result in rather verbose and difficult to read code (which will be addressed next).
 
 <h3>3. More data wrangling</h3>
 <h4 class="highlighted">tidy data in JavaScript</h4>
+All the looping through JSON can be a bit tiresome, but it is possible to work with data frames too. The data forge library lets you do many of the common tasks available in R or Python/pandas. For data reshaping, some of the key functionality of tidyr (from the R tidyverse) is also available to help you out.
 
 <h3>4. Data visualisation</h3>
 <h4 class="highlighted">graphing/charting</h4>
@@ -52,9 +54,14 @@ This has to cover some of the background first, so it takes a while to get to th
 
 <h3>7. Building web pages</h3>
 <h4 class="highlighted">HTML, CSS frameworks, etc.</h4>
+Also a quick look at how to control your HTML from JavaScript using jQuery - and why this is useful to know for webscraping.
 
-<h3>8. Odds and ends</h3>
-<h4 class="highlighted">This is the fun stuff involving ML/AI</h4>
+<h3>8. Natural language processing</h3>
+<h4 class="highlighted">working with words</h4>
+Why would you want to do this in JavaScript, given that all the cutting-edge research is in Python? Don't overlook the NLP tasks that aren't so resource-intensive and make sense to put on the client. How far can/should you push NLP in JavaScript, especially in node?</h4>
+
+<h3>9. Machine learning and AI</h3>
+<h4 class="highlighted">Not all ML or AI tasks require lengthy training and will run in the browser in real-time. Neural networks can be trained offline and used in inference mode to benefit users, especially where privacy or security restrictions mean data cannot leave your network.</h4>
 
 <h3>Some reading material to get you started</h3>
 <ul>
