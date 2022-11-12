@@ -11,8 +11,8 @@
     "moment": "^2.29.4",
     "pg-promise": "^10.4.4",
     "python-shell": "^1.0.8",
-    "socket.io": "^2.3.0",
     "ws": "^7.4.6"
+    "socket.io": "^2.5.0",
   },
   "devDependencies": {},
   "scripts": {
